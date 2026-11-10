@@ -74,8 +74,9 @@ export default function Login() {
   };
 
   const handleFillDemo = () => {
-    if (!env.demoEmail) return;
-    setF({ email: env.demoEmail, password: env.demoPassword });
+    const email = env.demoEmail || 'admin@rojmel.app';
+    const password = env.demoPassword || 'Admin@123';
+    setF({ email, password });
     setErrors({});
     toast.info('Demo credentials filled!');
   };
@@ -188,25 +189,23 @@ export default function Login() {
           </Button>
 
           {/* Quick Demo Fill Card */}
-          {env.demoEmail && (
-            <div
-              onClick={handleFillDemo}
-              className="mt-5 p-3 rounded-xl bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 cursor-pointer transition-all duration-200 flex items-center justify-between group"
-              role="button"
-              title="Click to fill demo account credentials"
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                <div className="text-left min-w-0">
-                  <p className="text-xs font-bold text-slate-700 leading-tight">Quick Demo Login</p>
-                  <p className="text-[11px] text-slate-500 truncate">{env.demoEmail}</p>
-                </div>
+          <div
+            onClick={handleFillDemo}
+            className="mt-5 p-3 rounded-xl bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 cursor-pointer transition-all duration-200 flex items-center justify-between group"
+            role="button"
+            title="Click to fill demo account credentials"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <div className="text-left min-w-0">
+                <p className="text-xs font-bold text-slate-700 leading-tight">Quick Demo Login</p>
+                <p className="text-[11px] text-slate-500 truncate">{env.demoEmail || 'admin@rojmel.app'}</p>
               </div>
-              <span className="text-xs font-semibold text-[#3454D1] group-hover:translate-x-0.5 transition-transform duration-200 shrink-0">
-                Fill Details →
-              </span>
             </div>
-          )}
+            <span className="text-xs font-semibold text-[#3454D1] group-hover:translate-x-0.5 transition-transform duration-200 shrink-0">
+              Fill Details →
+            </span>
+          </div>
         </form>
       </Paper>
 

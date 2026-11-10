@@ -3,6 +3,6 @@ export const env = {
   appName: e.VITE_APP_NAME || 'Rojmel',
   storagePrefix: e.VITE_STORAGE_PREFIX || 'rojmel-',
   apiUrl: e.VITE_API_URL || '',
-  demoEmail: (e.VITE_DEMO_EMAIL || '').toLowerCase(),
-  demoPassword: e.VITE_DEMO_PASSWORD || '',
+  demoEmail: (e.VITE_DEMO_EMAIL || 'admin@rojmel.app').toLowerCase(),
+  demoPassword: e.VITE_DEMO_PASSWORD || 'Admin@123',
 };
