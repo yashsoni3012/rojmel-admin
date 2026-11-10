@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import PageSkeleton from './PageSkeleton.jsx';
 import {
   AppBar,
   Avatar,
   BottomNavigation,
   BottomNavigationAction,
   Box,
+  Chip,
   Divider,
   Drawer,
   IconButton,
@@ -29,8 +31,10 @@ import PetrolIcon from '@mui/icons-material/LocalGasStationRounded';
 import SavingsIcon from '@mui/icons-material/SavingsRounded';
 import SettingsIcon from '@mui/icons-material/SettingsRounded';
 import LogoutIcon from '@mui/icons-material/LogoutRounded';
+import WorkspacePremiumRoundedIcon from '@mui/icons-material/WorkspacePremiumRounded';
 import ConfirmDialog from './ConfirmDialog.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { useSubscription } from '../../context/SubscriptionContext.jsx';
 import { env } from '../../config/env.js';
 
 const NAV = [
@@ -40,6 +44,7 @@ const NAV = [
   { to: '/expenses', label: 'Expenses', icon: <ExpenseIcon /> },
   { to: '/petrol', label: 'Petrol', icon: <PetrolIcon /> },
   { to: '/savings', label: 'Savings', icon: <SavingsIcon /> },
+  { to: '/subscription', label: 'Subscription', icon: <WorkspacePremiumRoundedIcon /> },
   { to: '/settings', label: 'Settings', icon: <SettingsIcon /> },
 ];
 
@@ -56,6 +61,7 @@ const itemSx = {
 
 function Sidebar({ onNavigate, onLogout, onClose, isDrawer }) {
   const { user } = useAuth();
+  const { subscription } = useSubscription();
 
   return (
     <div className="h-full flex flex-col bg-[#18233F] text-white">
@@ -97,6 +103,11 @@ function Sidebar({ onNavigate, onLogout, onClose, isDrawer }) {
             <Typography variant="caption" noWrap sx={{ color: '#9FB0D9', display: 'block' }}>
               {user.email}
             </Typography>
+            <div className="mt-1 flex items-center gap-1.5">
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                {subscription.name}
+              </span>
+            </div>
           </div>
         </div>
       )}
@@ -151,6 +162,7 @@ function Sidebar({ onNavigate, onLogout, onClose, isDrawer }) {
 
 export default function Layout() {
   const { user, logout } = useAuth();
+  const { subscription } = useSubscription();
   const location = useLocation();
   const navigate = useNavigate();
   const [drawer, setDrawer] = useState(false);
@@ -297,9 +309,26 @@ export default function Layout() {
             {/* Right User Actions */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, flexShrink: 0 }}>
               <Box sx={{ display: { xs: 'none', sm: 'block' }, textAlign: 'right', lineHeight: 1.2 }}>
-                <Typography variant="body2" fontWeight={700} sx={{ color: '#18233F' }}>
-                  {user?.name}
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                  <Typography variant="body2" fontWeight={700} sx={{ color: '#18233F' }}>
+                    {user?.name}
+                  </Typography>
+                  <Chip
+                    component={NavLink}
+                    to="/subscription"
+                    size="small"
+                    label={subscription.name}
+                    clickable
+                    sx={{
+                      bgcolor: '#FEF3C7',
+                      color: '#B45309',
+                      fontWeight: 800,
+                      height: 20,
+                      fontSize: '0.68rem',
+                      cursor: 'pointer',
+                    }}
+                  />
+                </Box>
                 <Typography variant="caption" sx={{ color: '#6B7592' }}>
                   {user?.email}
                 </Typography>
@@ -337,20 +366,42 @@ export default function Layout() {
                   sx: {
                     mt: 1,
                     borderRadius: 2,
-                    minWidth: 190,
+                    minWidth: 210,
                     border: '1px solid #E2E8F0',
                   },
                 }}
               >
-                <Box sx={{ px: 2, py: 1.5, display: { xs: 'block', sm: 'none' } }}>
+                <Box sx={{ px: 2, py: 1.5 }}>
                   <Typography variant="subtitle2" fontWeight={700} noWrap>
                     {user?.name}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" noWrap display="block">
                     {user?.email}
                   </Typography>
+                  <Box sx={{ mt: 0.8, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Chip
+                      size="small"
+                      label={`Plan: ${subscription.name}`}
+                      sx={{
+                        bgcolor: 'rgba(52, 84, 209, 0.1)',
+                        color: '#3454D1',
+                        fontWeight: 700,
+                        height: 22,
+                        fontSize: '0.72rem',
+                      }}
+                    />
+                  </Box>
                   <Divider sx={{ my: 1 }} />
                 </Box>
+                <MenuItem
+                  component={NavLink}
+                  to="/subscription"
+                  onClick={() => setAnchor(null)}
+                  sx={{ py: 1, fontWeight: 600, gap: 1.5 }}
+                >
+                  <WorkspacePremiumRoundedIcon sx={{ fontSize: 20, color: '#B45309' }} />
+                  Subscription Plans
+                </MenuItem>
                 <MenuItem
                   component={NavLink}
                   to="/settings"
@@ -385,7 +436,9 @@ export default function Layout() {
             mx: 'auto',
           }}
         >
-          <Outlet />
+          <Suspense fallback={<PageSkeleton />}>
+            <Outlet />
+          </Suspense>
         </Box>
       </Box>
 

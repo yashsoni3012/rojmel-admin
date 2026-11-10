@@ -8,6 +8,7 @@ import { ToastProvider } from './context/ToastContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { SettingsProvider } from './context/SettingsContext.jsx';
 import { FinanceProvider } from './context/FinanceContext.jsx';
+import { SubscriptionProvider } from './context/SubscriptionContext.jsx';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -16,13 +17,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <CssBaseline />
       <ToastProvider>
         <AuthProvider>
-          <SettingsProvider>
-            <FinanceProvider>
-              <BrowserRouter>
-                <App />
-              </BrowserRouter>
-            </FinanceProvider>
-          </SettingsProvider>
+          <SubscriptionProvider>
+            <SettingsProvider>
+              <FinanceProvider>
+                <BrowserRouter>
+                  <App />
+                </BrowserRouter>
+              </FinanceProvider>
+            </SettingsProvider>
+          </SubscriptionProvider>
         </AuthProvider>
       </ToastProvider>
     </ThemeProvider>

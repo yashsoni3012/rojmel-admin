@@ -1,5 +1,24 @@
 import { useState } from 'react';
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import {
+  Box,
+  Button,
+  Chip,
+  FormControl,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from '@mui/material';
+import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded';
+import ClearRoundedIcon from '@mui/icons-material/ClearRounded';
 import PageHeader from '../components/common/PageHeader.jsx';
 import EmptyState from '../components/common/EmptyState.jsx';
 import Pagination from '../components/common/Pagination.jsx';
@@ -12,6 +31,8 @@ export default function Daily() {
   const { entries } = useFinance();
   const { settings } = useSettings();
   const [month, setMonth] = useState(thisMonth());
+  const [filterType, setFilterType] = useState('all');
+  const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [rpp, setRpp] = useState(10);
 
@@ -21,20 +42,205 @@ export default function Daily() {
   const totalSavings = sum(monthEntries.filter((e) => e.type === 'saving'));
   const netBalance = totalIncome - totalExpense - totalSavings;
 
-  const days = [...new Set(monthEntries.map((e) => e.date))].sort().reverse();
-  const safePage = Math.min(page, Math.max(0, Math.ceil(days.length / rpp) - 1));
-  const visibleDays = days.slice(safePage * rpp, safePage * rpp + rpp);
+  // Group entries by date
+  const allDays = [...new Set(monthEntries.map((e) => e.date))];
+
+  // Daily aggregates map
+  const dailyData = allDays.map((date) => {
+    const dayEntries = monthEntries.filter((e) => e.date === date);
+    const dayIncome = sum(dayEntries.filter((e) => e.type === 'income'));
+    const dayExpense = sum(dayEntries.filter((e) => e.type === 'expense'));
+    const daySavings = sum(dayEntries.filter((e) => e.type === 'saving'));
+    const dayNet = dayIncome - dayExpense - daySavings;
+    return { date, dayIncome, dayExpense, daySavings, dayNet, count: dayEntries.length };
+  });
+
+  // Filter days by activity and search
+  const filteredDays = dailyData.filter((d) => {
+    let matchesType = true;
+    if (filterType === 'income') matchesType = d.dayIncome > 0;
+    else if (filterType === 'expense') matchesType = d.dayExpense > 0;
+    else if (filterType === 'saving') matchesType = d.daySavings > 0;
+    else if (filterType === 'surplus') matchesType = d.dayNet > 0;
+    else if (filterType === 'deficit') matchesType = d.dayNet < 0;
+
+    const q = search.trim().toLowerCase();
+    const formattedDate = prettyDate(d.date).toLowerCase();
+    const matchesSearch =
+      !q ||
+      d.date.includes(q) ||
+      formattedDate.includes(q) ||
+      String(d.dayIncome).includes(q) ||
+      String(d.dayExpense).includes(q) ||
+      String(d.dayNet).includes(q);
+
+    return matchesType && matchesSearch;
+  });
+
+  // Sorted days (latest date first by default)
+  const sortedDays = [...filteredDays].sort((a, b) => b.date.localeCompare(a.date));
+
+  const safePage = Math.min(page, Math.max(0, Math.ceil(sortedDays.length / rpp) - 1));
+  const visibleDays = sortedDays.slice(safePage * rpp, safePage * rpp + rpp);
 
   return (
     <>
-      <PageHeader title="Day by day" subtitle="Income, spending and savings for each date" month={month} onMonth={setMonth} />
+      {/* Search Bar replaces the redundant heading in Day by Day */}
+      <PageHeader
+        searchValue={search}
+        onSearch={(v) => {
+          setSearch(v);
+          setPage(0);
+        }}
+        searchPlaceholder="Search dates (e.g. 15, Nov) or amounts..."
+        month={month}
+        onMonth={setMonth}
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
-        <StatCard label="Total income" value={inr(totalIncome)} color="#0E9F6E" icon={<span className="font-extrabold">₹</span>} />
-        <StatCard label="Total expenses" value={inr(totalExpense)} color="#E5484D" icon={<span className="font-extrabold">₹</span>} />
-        <StatCard label="Total savings" value={inr(totalSavings)} color="#3B82F6" icon={<span className="font-extrabold">₹</span>} />
-        <StatCard label="Net balance" value={inr(netBalance)} color={netBalance >= 0 ? '#3454D1' : '#E5484D'} icon={<span className="font-extrabold">±</span>} />
+        <StatCard
+          label="Total income"
+          value={inr(totalIncome)}
+          color="#0E9F6E"
+          icon={<span className="font-extrabold">₹</span>}
+        />
+        <StatCard
+          label="Total expenses"
+          value={inr(totalExpense)}
+          color="#E5484D"
+          icon={<span className="font-extrabold">₹</span>}
+        />
+        <StatCard
+          label="Total savings"
+          value={inr(totalSavings)}
+          color="#3B82F6"
+          icon={<span className="font-extrabold">₹</span>}
+        />
+        <StatCard
+          label="Net balance"
+          value={inr(netBalance)}
+          color={netBalance >= 0 ? '#3454D1' : '#E5484D'}
+          icon={<span className="font-extrabold">±</span>}
+        />
       </div>
+
+      {/* Select Filtration Toolbar */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 2, sm: 2.2 },
+          mb: 3,
+          borderRadius: 3,
+          border: '1px solid #E2E8F0',
+          bgcolor: '#FFFFFF',
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'stretch', sm: 'center' },
+          justifyContent: 'space-between',
+          gap: 2,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+          {/* Day Activity Select Filter */}
+          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 220 } }}>
+            <InputLabel id="daily-filter-label" sx={{ fontSize: '0.88rem', fontWeight: 600 }}>
+              Activity Filter
+            </InputLabel>
+            <Select
+              labelId="daily-filter-label"
+              id="daily-filter"
+              value={filterType}
+              label="Activity Filter"
+              onChange={(e) => {
+                setFilterType(e.target.value);
+                setPage(0);
+              }}
+              startAdornment={
+                <InputAdornment position="start" sx={{ pl: 0.5, mr: 0.5 }}>
+                  <FilterListRoundedIcon sx={{ fontSize: 20, color: '#3454D1' }} />
+                </InputAdornment>
+              }
+              sx={{
+                borderRadius: '10px',
+                bgcolor: '#F8FAFC',
+                fontWeight: 600,
+                fontSize: '0.88rem',
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94A3B8' },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#3454D1' },
+              }}
+            >
+              <MenuItem value="all" sx={{ fontSize: '0.88rem', fontWeight: 500 }}>
+                All Recorded Days ({allDays.length})
+              </MenuItem>
+              <MenuItem value="income" sx={{ fontSize: '0.88rem', fontWeight: 500 }}>
+                Days with Income
+              </MenuItem>
+              <MenuItem value="expense" sx={{ fontSize: '0.88rem', fontWeight: 500 }}>
+                Days with Expenses
+              </MenuItem>
+              <MenuItem value="saving" sx={{ fontSize: '0.88rem', fontWeight: 500 }}>
+                Days with Savings
+              </MenuItem>
+              <MenuItem value="surplus" sx={{ fontSize: '0.88rem', fontWeight: 500 }}>
+                Net Surplus Days (+)
+              </MenuItem>
+              <MenuItem value="deficit" sx={{ fontSize: '0.88rem', fontWeight: 500 }}>
+                Net Deficit Days (−)
+              </MenuItem>
+            </Select>
+          </FormControl>
+
+          {/* Search chip if active */}
+          {search && (
+            <Chip
+              size="small"
+              label={`Search: "${search}"`}
+              onDelete={() => setSearch('')}
+              sx={{
+                bgcolor: 'rgba(52, 84, 209, 0.08)',
+                color: '#3454D1',
+                fontWeight: 600,
+                fontSize: '0.78rem',
+              }}
+            />
+          )}
+
+          {/* Reset button if filter is active */}
+          {(filterType !== 'all' || search) && (
+            <Button
+              size="small"
+              variant="text"
+              onClick={() => {
+                setFilterType('all');
+                setSearch('');
+                setPage(0);
+              }}
+              startIcon={<ClearRoundedIcon sx={{ fontSize: 16 }} />}
+              sx={{
+                color: '#E5484D',
+                fontWeight: 700,
+                fontSize: '0.82rem',
+                textTransform: 'none',
+              }}
+            >
+              Reset
+            </Button>
+          )}
+        </Box>
+
+        <Typography
+          variant="body2"
+          sx={{
+            color: '#64748B',
+            fontWeight: 600,
+            fontSize: '0.85rem',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Showing <span style={{ color: '#18233F', fontWeight: 700 }}>{sortedDays.length}</span> {sortedDays.length === 1 ? 'day' : 'days'}
+        </Typography>
+      </Paper>
 
       <Paper
         elevation={0}
@@ -46,7 +252,7 @@ export default function Daily() {
           bgcolor: '#FFFFFF',
         }}
       >
-        <TableContainer sx={{ width: '100%', overflowX: 'auto', minHeight: days.length === 0 ? 320 : 'auto' }}>
+        <TableContainer sx={{ width: '100%', overflowX: 'auto', minHeight: sortedDays.length === 0 ? 320 : 'auto' }}>
           <Table size={settings.compactRows ? 'small' : 'medium'} sx={{ minWidth: 640, width: '100%' }}>
             <TableHead sx={{ bgcolor: '#F8FAFC' }}>
               <TableRow>
@@ -63,50 +269,68 @@ export default function Daily() {
                   Savings
                 </TableCell>
                 <TableCell align="right" sx={{ width: '19%', minWidth: 120, py: 2, fontWeight: 700, color: '#475569', fontSize: '0.85rem' }}>
-                  Net
+                  Net balance
                 </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {visibleDays.map((d) => {
-                const day = entries.filter((e) => e.date === d);
-                const i = sum(day.filter((e) => e.type === 'income'));
-                const x = sum(day.filter((e) => e.type === 'expense'));
-                const s = sum(day.filter((e) => e.type === 'saving'));
-                const net = i - x - s;
-                return (
-                  <TableRow key={d} hover sx={{ transition: 'background-color 0.15s ease' }}>
-                    <TableCell sx={{ py: settings.compactRows ? 1.2 : 2, whiteSpace: 'nowrap', fontWeight: 600, color: '#334155' }}>
-                      {prettyDate(d)}
-                    </TableCell>
-                    <TableCell align="right" sx={{ py: settings.compactRows ? 1.2 : 2, color: '#0E9F6E', fontWeight: 700, fontSize: '0.95rem' }}>
-                      {i ? inr(i) : '—'}
-                    </TableCell>
-                    <TableCell align="right" sx={{ py: settings.compactRows ? 1.2 : 2, color: '#E5484D', fontWeight: 700, fontSize: '0.95rem' }}>
-                      {x ? inr(x) : '—'}
-                    </TableCell>
-                    <TableCell align="right" sx={{ py: settings.compactRows ? 1.2 : 2, color: '#3B82F6', fontWeight: 700, fontSize: '0.95rem' }}>
-                      {s ? inr(s) : '—'}
-                    </TableCell>
-                    <TableCell align="right" sx={{ py: settings.compactRows ? 1.2 : 2, fontWeight: 800, color: net >= 0 ? '#18233F' : '#E5484D', fontSize: '0.95rem' }}>
-                      {inr(net)}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-              {days.length === 0 && (
+              {visibleDays.map((d) => (
+                <TableRow
+                  key={d.date}
+                  hover
+                  sx={{
+                    transition: 'background-color 0.15s ease',
+                  }}
+                >
+                  <TableCell sx={{ py: settings.compactRows ? 1.2 : 2, fontWeight: 600, color: '#334155' }}>
+                    {prettyDate(d.date)}
+                  </TableCell>
+                  <TableCell align="right" sx={{ py: settings.compactRows ? 1.2 : 2, fontWeight: 700, color: '#0E9F6E' }}>
+                    {d.dayIncome ? inr(d.dayIncome) : '—'}
+                  </TableCell>
+                  <TableCell align="right" sx={{ py: settings.compactRows ? 1.2 : 2, fontWeight: 700, color: '#E5484D' }}>
+                    {d.dayExpense ? inr(d.dayExpense) : '—'}
+                  </TableCell>
+                  <TableCell align="right" sx={{ py: settings.compactRows ? 1.2 : 2, fontWeight: 700, color: '#3B82F6' }}>
+                    {d.daySavings ? inr(d.daySavings) : '—'}
+                  </TableCell>
+                  <TableCell
+                    align="right"
+                    sx={{
+                      py: settings.compactRows ? 1.2 : 2,
+                      fontWeight: 800,
+                      color: d.dayNet >= 0 ? '#3454D1' : '#E5484D',
+                    }}
+                  >
+                    {inr(d.dayNet)}
+                  </TableCell>
+                </TableRow>
+              ))}
+
+              {sortedDays.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} sx={{ borderBottom: 0, py: 6 }}>
-                    <EmptyState title="No activity this month" text="Add income or expenses to see them here." />
+                  <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
+                    <EmptyState
+                      title="No entries matching filter"
+                      text="Try selecting another activity filter, clearing search, or change the selected month."
+                    />
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </TableContainer>
-        {days.length > 0 && (
-          <Pagination count={days.length} page={safePage} rowsPerPage={rpp} onPage={setPage} onRows={setRpp} />
-        )}
+
+        <Pagination
+          count={sortedDays.length}
+          page={safePage}
+          rowsPerPage={rpp}
+          onPage={setPage}
+          onRows={(r) => {
+            setRpp(r);
+            setPage(0);
+          }}
+        />
       </Paper>
     </>
   );

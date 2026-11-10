@@ -1,17 +1,22 @@
-import { Avatar, Chip, Divider, Paper, Typography } from '@mui/material';
+import { NavLink } from 'react-router-dom';
+import { Avatar, Button, Chip, Divider, Paper, Typography } from '@mui/material';
 import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import WorkspacePremiumRoundedIcon from '@mui/icons-material/WorkspacePremiumRounded';
 import PageHeader from '../components/common/PageHeader.jsx';
 import Switch from '../components/common/Switch.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useSettings } from '../context/SettingsContext.jsx';
+import { useSubscription } from '../context/SubscriptionContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { env } from '../config/env.js';
+import { prettyDate } from '../utils.js';
 
 export default function Settings() {
   const { user } = useAuth();
   const { settings, update } = useSettings();
+  const { subscription } = useSubscription();
   const toast = useToast();
   const change = (key, msg) => (v) => {
     update(key, v);
@@ -61,6 +66,18 @@ export default function Settings() {
                     {user?.name}
                   </Typography>
                   <Chip size="small" label="Administrator" color="primary" sx={{ fontWeight: 700, height: 22, fontSize: '0.75rem' }} />
+                  <Chip
+                    size="small"
+                    icon={<WorkspacePremiumRoundedIcon sx={{ fontSize: '15px !important', color: '#B45309 !important' }} />}
+                    label={subscription.name}
+                    sx={{
+                      bgcolor: '#FEF3C7',
+                      color: '#B45309',
+                      fontWeight: 800,
+                      height: 22,
+                      fontSize: '0.75rem',
+                    }}
+                  />
                   <Chip size="small" label="Active" sx={{ bgcolor: '#DCFCE7', color: '#15803D', fontWeight: 700, height: 22, fontSize: '0.75rem' }} />
                 </div>
                 <Typography variant="body2" color="text.secondary">
@@ -69,7 +86,7 @@ export default function Settings() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-4">
               <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100">
                 <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
                   ACCOUNT ROLE
@@ -80,12 +97,56 @@ export default function Settings() {
               </div>
               <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100">
                 <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
-                  SESSION STATUS
+                  ACTIVE PLAN
                 </Typography>
-                <Typography variant="body2" fontWeight={700} sx={{ color: '#1E293B', mt: 0.5 }}>
-                  Authenticated & Active
+                <Typography variant="body2" fontWeight={800} sx={{ color: '#3454D1', mt: 0.5 }}>
+                  {subscription.name}
                 </Typography>
               </div>
+              <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100">
+                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
+                  PLAN VALIDITY
+                </Typography>
+                <Typography variant="body2" fontWeight={700} sx={{ color: '#1E293B', mt: 0.5 }}>
+                  {subscription.expiryDate === 'Lifetime'
+                    ? 'Lifetime Access'
+                    : `${prettyDate(subscription.expiryDate)} (${subscription.daysLeft}d left)`}
+                </Typography>
+              </div>
+            </div>
+
+            {/* Quick Subscription Manage Banner */}
+            <div className="p-3.5 rounded-xl bg-gradient-to-r from-blue-50/80 to-indigo-50/50 border border-blue-100/90 flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <WorkspacePremiumRoundedIcon sx={{ color: '#3454D1', fontSize: 24 }} />
+                <div>
+                  <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#18233F' }}>
+                    Current Plan: {subscription.name}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block' }}>
+                    {subscription.expiryDate === 'Lifetime'
+                      ? 'Never expires • Permanent VIP Access'
+                      : `Valid until ${prettyDate(subscription.expiryDate)} • ${subscription.daysLeft} days remaining`}
+                  </Typography>
+                </div>
+              </div>
+              <Button
+                component={NavLink}
+                to="/subscription"
+                size="small"
+                variant="contained"
+                sx={{
+                  borderRadius: '9px',
+                  fontWeight: 700,
+                  bgcolor: '#3454D1',
+                  px: 2,
+                  py: 0.8,
+                  textTransform: 'none',
+                  '&:hover': { bgcolor: '#2743B8' },
+                }}
+              >
+                Change / Upgrade Plan →
+              </Button>
             </div>
           </Paper>
 
@@ -114,6 +175,10 @@ export default function Settings() {
               <div className="flex justify-between items-center pt-3">
                 <span className="text-slate-500 font-medium">Version</span>
                 <span className="font-bold text-slate-800">2.0.0</span>
+              </div>
+              <div className="flex justify-between items-center pt-3">
+                <span className="text-slate-500 font-medium">Active Plan</span>
+                <span className="font-bold text-[#3454D1]">{subscription.name}</span>
               </div>
               <div className="flex justify-between items-center pt-3">
                 <span className="text-slate-500 font-medium">Default Currency</span>
