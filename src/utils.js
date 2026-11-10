@@ -2,8 +2,22 @@ export const inr = (n) => '₹' + Number(n || 0).toLocaleString('en-IN', { maxim
 export const today = () => new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD (local)
 export const thisMonth = () => today().slice(0, 7);
 export const sum = (list) => list.reduce((s, x) => s + Number(x.amount || 0), 0);
-export const prettyDate = (d) =>
-  new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', weekday: 'short' });
+export const prettyDate = (d) => {
+  if (!d || d === 'Lifetime') return d || '—';
+  try {
+    const str = String(d).includes('T') ? d : `${d}T00:00:00`;
+    const dt = new Date(str);
+    if (isNaN(dt.getTime())) return String(d);
+    return dt.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      weekday: 'short',
+    });
+  } catch {
+    return String(d);
+  }
+};
 
 export const CATEGORIES = {
   income: ['Salary', 'Extra income', 'Other income'],

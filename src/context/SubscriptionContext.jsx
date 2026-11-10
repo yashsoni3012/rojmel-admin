@@ -90,35 +90,63 @@ const DEFAULT_SUB = {
   expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
 };
 
+const DEFAULT_HISTORY = [
+  {
+    invoiceId: 'ROJ-INV-2026-001',
+    planId: DEFAULT_SUB.id,
+    planName: DEFAULT_SUB.name,
+    amount: DEFAULT_SUB.amount,
+    cycle: DEFAULT_SUB.cycle,
+    date: DEFAULT_SUB.startDate,
+    expiryDate: DEFAULT_SUB.expiryDate,
+    status: 'Active',
+  },
+];
+
 export function SubscriptionProvider({ children }) {
   const toast = useToast();
-  const [sub, setSub] = useState(() => storage.get('subscription', DEFAULT_SUB));
-  const [history, setHistory] = useState(() => storage.get('subscription_history', [
-    {
-      invoiceId: 'INV-2026-001',
-      planId: DEFAULT_SUB.id,
-      planName: DEFAULT_SUB.name,
-      amount: DEFAULT_SUB.amount,
-      cycle: DEFAULT_SUB.cycle,
-      date: DEFAULT_SUB.startDate,
-      expiryDate: DEFAULT_SUB.expiryDate,
-      status: 'Active',
-    },
-  ]));
+  const [sub, setSub] = useState(() => {
+    try {
+      const saved = storage.get('subscription');
+      if (saved && typeof saved === 'object' && saved.id) {
+        return { ...DEFAULT_SUB, ...saved };
+      }
+    } catch (e) {
+      console.warn('Error loading subscription state:', e);
+    }
+    return DEFAULT_SUB;
+  });
+
+  const [history, setHistory] = useState(() => {
+    try {
+      const saved = storage.get('subscription_history');
+      if (Array.isArray(saved) && saved.length > 0) {
+        return saved;
+      }
+    } catch (e) {
+      console.warn('Error loading subscription history:', e);
+    }
+    return DEFAULT_HISTORY;
+  });
 
   // Calculate days left dynamically
   const daysLeft = useMemo(() => {
     if (!sub || sub.expiryDate === 'Lifetime' || sub.id === 'lifetime') return 'Lifetime';
-    const exp = new Date(sub.expiryDate).getTime();
-    const now = new Date().getTime();
-    return Math.max(0, Math.ceil((exp - now) / (1000 * 60 * 60 * 24)));
+    try {
+      const exp = new Date(sub.expiryDate).getTime();
+      const now = new Date().getTime();
+      if (isNaN(exp)) return 'Lifetime';
+      return Math.max(0, Math.ceil((exp - now) / (1000 * 60 * 60 * 24)));
+    } catch {
+      return '365';
+    }
   }, [sub]);
 
   const value = useMemo(
     () => ({
-      subscription: { ...sub, daysLeft },
+      subscription: { ...DEFAULT_SUB, ...(sub || {}), daysLeft },
       plans: SUBSCRIPTION_PLANS,
-      history,
+      history: Array.isArray(history) ? history : DEFAULT_HISTORY,
       updatePlan: (planId, cycle = 'monthly') => {
         const target = SUBSCRIPTION_PLANS.find((p) => p.id === planId) || SUBSCRIPTION_PLANS[0];
         const isLifetime = target.id === 'lifetime' || target.isLifetime;
@@ -153,7 +181,7 @@ export function SubscriptionProvider({ children }) {
         };
 
         const newInvoice = {
-          invoiceId: `INV-${Date.now().toString().slice(-6)}`,
+          invoiceId: `ROJ-INV-${Date.now().toString().slice(-6)}`,
           planId: target.id,
           planName: target.name,
           amount: price,
@@ -163,14 +191,15 @@ export function SubscriptionProvider({ children }) {
           status: 'Active',
         };
 
-        const newHistory = [newInvoice, ...history];
+        const currentHist = Array.isArray(history) ? history : DEFAULT_HISTORY;
+        const newHistory = [newInvoice, ...currentHist];
 
         setSub(updated);
         setHistory(newHistory);
         storage.set('subscription', updated);
         storage.set('subscription_history', newHistory);
 
-        toast.success(`Plan updated to ${target.name}! Valid till ${expiryDate}`);
+        toast?.success?.(`Plan updated to ${target.name}! Valid till ${expiryDate}`);
       },
     }),
     [sub, daysLeft, history, toast]

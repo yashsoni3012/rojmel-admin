@@ -317,7 +317,7 @@ export default function Layout() {
                     component={NavLink}
                     to="/subscription"
                     size="small"
-                    label={subscription.name}
+                    label={subscription?.name || 'Pro Ledger'}
                     clickable
                     sx={{
                       bgcolor: '#FEF3C7',
@@ -381,7 +381,7 @@ export default function Layout() {
                   <Box sx={{ mt: 0.8, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Chip
                       size="small"
-                      label={`Plan: ${subscription.name}`}
+                      label={`Plan: ${subscription?.name || 'Pro Ledger'}`}
                       sx={{
                         bgcolor: 'rgba(52, 84, 209, 0.1)',
                         color: '#3454D1',

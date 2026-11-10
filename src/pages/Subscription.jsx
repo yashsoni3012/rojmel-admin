@@ -30,7 +30,6 @@ import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
 import PictureAsPdfRoundedIcon from '@mui/icons-material/PictureAsPdfRounded';
-import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import PageHeader from '../components/common/PageHeader.jsx';
 import { useSubscription } from '../context/SubscriptionContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -39,7 +38,7 @@ import { inr, prettyDate } from '../utils.js';
 import { downloadDirectInvoicePdf } from '../utils/invoicePdf.js';
 
 export default function Subscription() {
-  const { subscription, plans, history, updatePlan } = useSubscription();
+  const { subscription = {}, plans = [], history = [], updatePlan } = useSubscription() || {};
   const { user } = useAuth();
   const toast = useToast();
   const [cycle, setCycle] = useState('yearly');
@@ -54,7 +53,7 @@ export default function Subscription() {
   };
 
   const handleConfirmUpgrade = () => {
-    if (selectedPlan) {
+    if (selectedPlan && updatePlan) {
       updatePlan(selectedPlan.id, selectedPlan.isLifetime ? 'lifetime' : cycle);
       setDialogOpen(false);
       setSelectedPlan(null);
@@ -63,19 +62,20 @@ export default function Subscription() {
 
   const handleDownloadInvoice = (inv) => {
     try {
+      if (!inv) return;
       downloadDirectInvoicePdf(inv, user);
-      toast?.success?.(`Invoice ${inv.invoiceId}.pdf downloaded!`);
+      toast?.success?.(`Invoice ${inv.invoiceId || 'record'}.pdf downloaded!`);
     } catch (err) {
       console.error('Invoice download error:', err);
       toast?.error?.('Failed to download invoice PDF.');
     }
   };
 
-  const currentPlan = plans.find((p) => p.id === subscription.id) || plans[1];
+  const currentPlan = (plans || []).find((p) => p.id === subscription?.id) || plans?.[1] || plans?.[0];
 
-  const q = search.trim().toLowerCase();
+  const q = (search || '').trim().toLowerCase();
 
-  const filteredPlans = plans.filter((p) => {
+  const filteredPlans = (plans || []).filter((p) => {
     if (!q) return true;
     return (
       p.name?.toLowerCase().includes(q) ||
@@ -84,15 +84,15 @@ export default function Subscription() {
     );
   });
 
-  const filteredHistory = history.filter((inv) => {
+  const filteredHistory = (history || []).filter((inv) => {
     if (!q) return true;
     return (
-      inv.invoiceId?.toLowerCase().includes(q) ||
-      inv.planName?.toLowerCase().includes(q) ||
-      inv.cycle?.toLowerCase().includes(q) ||
-      String(inv.amount).includes(q) ||
-      inv.date?.includes(q) ||
-      inv.status?.toLowerCase().includes(q)
+      inv?.invoiceId?.toLowerCase().includes(q) ||
+      inv?.planName?.toLowerCase().includes(q) ||
+      inv?.cycle?.toLowerCase().includes(q) ||
+      String(inv?.amount || '').includes(q) ||
+      String(inv?.date || '').includes(q) ||
+      inv?.status?.toLowerCase().includes(q)
     );
   });
 
@@ -135,7 +135,7 @@ export default function Subscription() {
               </Typography>
               <Chip
                 icon={<VerifiedRoundedIcon sx={{ fontSize: 16 }} />}
-                label={subscription.status?.toUpperCase() || 'ACTIVE'}
+                label={subscription?.status?.toUpperCase() || 'ACTIVE'}
                 size="small"
                 sx={{
                   bgcolor: '#DCFCE7',
@@ -148,11 +148,11 @@ export default function Subscription() {
             </Box>
 
             <Typography variant="h4" sx={{ fontWeight: 800, color: '#18233F', mb: 1 }}>
-              {subscription.name}
+              {subscription?.name || 'Pro Ledger'}
             </Typography>
 
             <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 600 }}>
-              {currentPlan?.description}
+              {currentPlan?.description || 'Active subscription ledger plan.'}
             </Typography>
           </Box>
 
@@ -189,13 +189,13 @@ export default function Subscription() {
                 PLAN VALIDITY
               </Typography>
               <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#18233F' }}>
-                {subscription.expiryDate === 'Lifetime'
+                {subscription?.expiryDate === 'Lifetime'
                   ? 'Lifetime Access (Never Expires)'
-                  : `Valid till ${prettyDate(subscription.expiryDate)}`}
+                  : `Valid till ${prettyDate(subscription?.expiryDate)}`}
               </Typography>
-              {subscription.expiryDate !== 'Lifetime' && (
+              {subscription?.expiryDate !== 'Lifetime' && (
                 <Typography variant="caption" sx={{ color: '#3454D1', fontWeight: 700 }}>
-                  ⏳ {subscription.daysLeft} days remaining
+                  ⏳ {subscription?.daysLeft ?? 365} days remaining
                 </Typography>
               )}
             </Box>
@@ -315,97 +315,97 @@ export default function Subscription() {
           }}
         >
           {filteredPlans.map((p) => {
-          const isCurrent = subscription.id === p.id;
-          const price = p.isLifetime
-            ? p.monthlyPrice
-            : cycle === 'yearly'
-            ? p.yearlyPrice
-            : p.monthlyPrice;
+            const isCurrent = subscription?.id === p?.id;
+            const price = p?.isLifetime
+              ? p?.monthlyPrice
+              : cycle === 'yearly'
+              ? p?.yearlyPrice
+              : p?.monthlyPrice;
 
-          return (
-            <Paper
-              key={p.id}
-              elevation={0}
-              sx={{
-                p: 3,
-                borderRadius: 3.5,
-                border: isCurrent
-                  ? '2px solid #3454D1'
-                  : p.popular
-                  ? '2px solid #3B82F6'
-                  : '1px solid #E2E8F0',
-                bgcolor: '#FFFFFF',
-                display: 'flex',
-                flexDirection: 'column',
-                position: 'relative',
-                transition: 'all 0.2s ease',
-                boxShadow: isCurrent
-                  ? '0 10px 30px rgba(52, 84, 209, 0.12)'
-                  : '0 2px 10px rgba(0,0,0,0.02)',
-                '&:hover': {
-                  transform: 'translateY(-3px)',
-                  boxShadow: '0 12px 32px rgba(24, 35, 63, 0.08)',
-                },
-              }}
-            >
-              {/* Badge */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Chip
-                  label={p.badge}
-                  size="small"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: '0.72rem',
-                    bgcolor: p.popular ? 'rgba(52, 84, 209, 0.1)' : 'rgba(100, 116, 139, 0.1)',
-                    color: p.popular ? '#3454D1' : '#475569',
-                  }}
-                />
-                {isCurrent && (
+            return (
+              <Paper
+                key={p.id}
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 3.5,
+                  border: isCurrent
+                    ? '2px solid #3454D1'
+                    : p.popular
+                    ? '2px solid #3B82F6'
+                    : '1px solid #E2E8F0',
+                  bgcolor: '#FFFFFF',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  position: 'relative',
+                  transition: 'all 0.2s ease',
+                  boxShadow: isCurrent
+                    ? '0 10px 30px rgba(52, 84, 209, 0.12)'
+                    : '0 2px 10px rgba(0,0,0,0.02)',
+                  '&:hover': {
+                    transform: 'translateY(-3px)',
+                    boxShadow: '0 12px 32px rgba(24, 35, 63, 0.08)',
+                  },
+                }}
+              >
+                {/* Badge */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                   <Chip
-                    label="Current Plan"
+                    label={p.badge}
                     size="small"
-                    color="primary"
-                    sx={{ fontWeight: 800, fontSize: '0.72rem' }}
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: '0.72rem',
+                      bgcolor: p.popular ? 'rgba(52, 84, 209, 0.1)' : 'rgba(100, 116, 139, 0.1)',
+                      color: p.popular ? '#3454D1' : '#475569',
+                    }}
                   />
-                )}
-              </Box>
-
-              {/* Title & Description */}
-              <Typography variant="h6" sx={{ fontWeight: 800, color: '#18233F', mb: 0.5 }}>
-                {p.name}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ minHeight: 40, fontSize: '0.82rem', mb: 2 }}>
-                {p.description}
-              </Typography>
-
-              {/* Price */}
-              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, mb: 3 }}>
-                <Typography variant="h4" sx={{ fontWeight: 800, color: '#18233F' }}>
-                  {inr(price)}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                  {p.isLifetime ? '/ one-time' : cycle === 'yearly' ? '/ year' : '/ month'}
-                </Typography>
-              </Box>
-
-              <Divider sx={{ mb: 2.5 }} />
-
-              {/* Features List */}
-              <Box sx={{ flex: 1, mb: 3 }}>
-                <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
-                  INCLUDED FEATURES:
-                </Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2 }}>
-                  {p.features.map((f) => (
-                    <Box key={f} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                      <CheckCircleRoundedIcon sx={{ fontSize: 18, color: '#0E9F6E', shrink: 0, mt: 0.2 }} />
-                      <Typography variant="body2" sx={{ fontSize: '0.82rem', color: '#334155', fontWeight: 500 }}>
-                        {f}
-                      </Typography>
-                    </Box>
-                  ))}
+                  {isCurrent && (
+                    <Chip
+                      label="Current Plan"
+                      size="small"
+                      color="primary"
+                      sx={{ fontWeight: 800, fontSize: '0.72rem' }}
+                    />
+                  )}
                 </Box>
-              </Box>
+
+                {/* Title & Description */}
+                <Typography variant="h6" sx={{ fontWeight: 800, color: '#18233F', mb: 0.5 }}>
+                  {p.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ minHeight: 40, fontSize: '0.82rem', mb: 2 }}>
+                  {p.description}
+                </Typography>
+
+                {/* Price */}
+                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, mb: 3 }}>
+                  <Typography variant="h4" sx={{ fontWeight: 800, color: '#18233F' }}>
+                    {inr(price)}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                    {p.isLifetime ? '/ one-time' : cycle === 'yearly' ? '/ year' : '/ month'}
+                  </Typography>
+                </Box>
+
+                <Divider sx={{ mb: 2.5 }} />
+
+                {/* Features List */}
+                <Box sx={{ flex: 1, mb: 3 }}>
+                  <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
+                    INCLUDED FEATURES:
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2 }}>
+                    {(p.features || []).map((f) => (
+                      <Box key={f} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                        <CheckCircleRoundedIcon sx={{ fontSize: 18, color: '#0E9F6E', flexShrink: 0, mt: 0.2 }} />
+                        <Typography variant="body2" sx={{ fontSize: '0.82rem', color: '#334155', fontWeight: 500 }}>
+                          {f}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
 
               {/* Action Button */}
               {isCurrent ? (
@@ -486,21 +486,21 @@ export default function Subscription() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredHistory.map((inv) => (
-                    <TableRow key={inv.invoiceId} hover>
-                      <TableCell sx={{ fontWeight: 600, color: '#18233F' }}>{inv.invoiceId}</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: '#3454D1' }}>{inv.planName}</TableCell>
+                  filteredHistory.map((inv, idx) => (
+                    <TableRow key={inv?.invoiceId || `inv-${idx}`} hover>
+                      <TableCell sx={{ fontWeight: 600, color: '#18233F' }}>{inv?.invoiceId || 'N/A'}</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: '#3454D1' }}>{inv?.planName || 'Plan'}</TableCell>
                       <TableCell sx={{ textTransform: 'capitalize', color: '#64748B', fontWeight: 600 }}>
-                        {inv.cycle}
+                        {inv?.cycle || 'yearly'}
                       </TableCell>
-                      <TableCell sx={{ fontWeight: 800 }}>{inr(inv.amount)}</TableCell>
-                      <TableCell sx={{ color: '#475569' }}>{prettyDate(inv.date)}</TableCell>
+                      <TableCell sx={{ fontWeight: 800 }}>{inr(inv?.amount)}</TableCell>
+                      <TableCell sx={{ color: '#475569' }}>{prettyDate(inv?.date)}</TableCell>
                       <TableCell sx={{ color: '#475569' }}>
-                        {inv.expiryDate === 'Lifetime' ? 'Lifetime' : prettyDate(inv.expiryDate)}
+                        {inv?.expiryDate === 'Lifetime' ? 'Lifetime' : prettyDate(inv?.expiryDate)}
                       </TableCell>
                       <TableCell align="center">
                         <Chip
-                          label={inv.status}
+                          label={inv?.status || 'Active'}
                           size="small"
                           sx={{
                             bgcolor: '#DCFCE7',

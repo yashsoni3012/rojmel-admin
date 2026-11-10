@@ -100,7 +100,7 @@ export default function Settings() {
                   ACTIVE PLAN
                 </Typography>
                 <Typography variant="body2" fontWeight={800} sx={{ color: '#3454D1', mt: 0.5 }}>
-                  {subscription.name}
+                  {subscription?.name || 'Pro Ledger'}
                 </Typography>
               </div>
               <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100">
@@ -108,9 +108,9 @@ export default function Settings() {
                   PLAN VALIDITY
                 </Typography>
                 <Typography variant="body2" fontWeight={700} sx={{ color: '#1E293B', mt: 0.5 }}>
-                  {subscription.expiryDate === 'Lifetime'
+                  {subscription?.expiryDate === 'Lifetime'
                     ? 'Lifetime Access'
-                    : `${prettyDate(subscription.expiryDate)} (${subscription.daysLeft}d left)`}
+                    : `${prettyDate(subscription?.expiryDate)} (${subscription?.daysLeft ?? 365}d left)`}
                 </Typography>
               </div>
             </div>
@@ -121,12 +121,12 @@ export default function Settings() {
                 <WorkspacePremiumRoundedIcon sx={{ color: '#3454D1', fontSize: 24 }} />
                 <div>
                   <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#18233F' }}>
-                    Current Plan: {subscription.name}
+                    Current Plan: {subscription?.name || 'Pro Ledger'}
                   </Typography>
                   <Typography variant="caption" sx={{ color: '#64748B', display: 'block' }}>
-                    {subscription.expiryDate === 'Lifetime'
+                    {subscription?.expiryDate === 'Lifetime'
                       ? 'Never expires • Permanent VIP Access'
-                      : `Valid until ${prettyDate(subscription.expiryDate)} • ${subscription.daysLeft} days remaining`}
+                      : `Valid until ${prettyDate(subscription?.expiryDate)} • ${subscription?.daysLeft ?? 365} days remaining`}
                   </Typography>
                 </div>
               </div>
