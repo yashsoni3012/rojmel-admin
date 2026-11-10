@@ -26,7 +26,7 @@ export default function EntryPage({ title, subtitle, type, categories, fixedCate
     <>
       <PageHeader title={title} subtitle={subtitle} month={month} onMonth={setMonth} accent={accent} onAdd={() => setDlg({ open: true, item: null })} />
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-5">
         <StatCard label={`Total ${title.toLowerCase()}`} value={inr(sum(rows))} color={accent} icon={<span className="font-extrabold">₹</span>} />
         <StatCard label="Entries" value={rows.length} color={accent} icon={<span className="font-extrabold">#</span>} />
         {fixedCategory === 'Petrol'
@@ -35,9 +35,20 @@ export default function EntryPage({ title, subtitle, type, categories, fixedCate
       </div>
 
       {!fixedCategory && (
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4">
           {['All', ...categories].map((c) => (
-            <Chip key={c} label={c} onClick={() => setCat(c)} color={cat === c ? 'primary' : 'default'} variant={cat === c ? 'filled' : 'outlined'} sx={{ fontWeight: 600, background: cat === c ? undefined : '#fff' }} />
+            <Chip
+              key={c}
+              label={c}
+              onClick={() => setCat(c)}
+              color={cat === c ? 'primary' : 'default'}
+              variant={cat === c ? 'filled' : 'outlined'}
+              sx={{
+                fontWeight: 600,
+                fontSize: { xs: '0.78rem', sm: '0.85rem' },
+                background: cat === c ? undefined : '#FFFFFF',
+              }}
+            />
           ))}
         </div>
       )}

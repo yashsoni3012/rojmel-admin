@@ -29,7 +29,7 @@ export default function Daily() {
     <>
       <PageHeader title="Day by day" subtitle="Income, spending and savings for each date" month={month} onMonth={setMonth} />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
         <StatCard label="Total income" value={inr(totalIncome)} color="#0E9F6E" icon={<span className="font-extrabold">₹</span>} />
         <StatCard label="Total expenses" value={inr(totalExpense)} color="#E5484D" icon={<span className="font-extrabold">₹</span>} />
         <StatCard label="Total savings" value={inr(totalSavings)} color="#3B82F6" icon={<span className="font-extrabold">₹</span>} />

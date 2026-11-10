@@ -1,6 +1,15 @@
 import { createTheme } from '@mui/material/styles';
 
 export default createTheme({
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 640,
+      md: 768,
+      lg: 1024,
+      xl: 1280,
+    },
+  },
   palette: {
     primary: { main: '#3454D1' },
     success: { main: '#0E9F6E' },

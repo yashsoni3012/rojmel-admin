@@ -33,7 +33,7 @@ export default function Dashboard() {
     <>
       <PageHeader title="Dashboard" subtitle="Where your money went this month" month={month} onMonth={setMonth} />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
         <StatCard label="Income" value={inr(income)} color="#0E9F6E" icon={<IncomeIcon />} />
         <StatCard label="Expenses" value={inr(expense)} color="#E5484D" icon={<ExpenseIcon />} />
         <StatCard label="Savings" value={inr(saved)} color="#3B82F6" icon={<SavingsIcon />} />
@@ -41,7 +41,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        <Paper className="p-5">
+        <Paper className="p-4 sm:p-5" sx={{ borderRadius: 3, border: '1px solid #E2E8F0' }} elevation={0}>
           <Typography variant="h6" mb={2}>Spending by category</Typography>
           {byCat.length === 0 && <Typography color="text.secondary" variant="body2">No expenses this month.</Typography>}
           <div className="space-y-3">
@@ -56,12 +56,12 @@ export default function Dashboard() {
           </div>
         </Paper>
 
-        <Paper className="p-5">
+        <Paper className="p-4 sm:p-5" sx={{ borderRadius: 3, border: '1px solid #E2E8F0' }} elevation={0}>
           <Typography variant="h6" mb={2}>Last 7 days spending</Typography>
-          <div className="flex items-end gap-3 h-44">
+          <div className="flex items-end gap-2 sm:gap-3 h-44">
             {last7.map((d) => (
               <div key={d.key} className="flex-1 flex flex-col items-center justify-end h-full">
-                <span className="text-[11px] font-semibold mb-1">{d.val ? inr(d.val) : ''}</span>
+                <span className="text-[10px] sm:text-[11px] font-semibold mb-1 truncate max-w-full text-center">{d.val ? inr(d.val) : ''}</span>
                 <div className="w-full rounded-t-lg" style={{ height: `${(d.val / max) * 100}%`, minHeight: 4, background: d.key === today() ? '#3454D1' : '#C7D2F5' }} />
                 <span className="text-xs text-slate-500 mt-1">{d.label}</span>
               </div>
