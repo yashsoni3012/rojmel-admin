@@ -112,7 +112,8 @@ export const authService = {
    *   "confirmPassword": "Strong@123",
    *   "shopName": "Yash General Store",
    *   "businessType": "Grocery",
-   *   "city": "Ahmedabad"
+   *   "city": "Ahmedabad",
+   *   "address": "Maninagar, Ahmedabad"
    * }
    */
   async register(data) {
@@ -125,6 +126,7 @@ export const authService = {
       shopName: (data.shopName || '').trim(),
       businessType: (data.businessType || '').trim(),
       city: (data.city || '').trim(),
+      address: (data.address || '').trim(),
     };
 
     const endpoint = (env.apiUrl ? env.apiUrl.replace(/\/$/, '') : '') + '/api/auth/register';

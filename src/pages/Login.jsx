@@ -20,6 +20,7 @@ import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 import LocationCityRoundedIcon from '@mui/icons-material/LocationCityRounded';
+import HomeWorkRoundedIcon from '@mui/icons-material/HomeWorkRounded';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import LaunchRoundedIcon from '@mui/icons-material/LaunchRounded';
 import AppRegistrationRoundedIcon from '@mui/icons-material/AppRegistrationRounded';
@@ -80,6 +81,7 @@ export default function Login() {
     shopName: '',
     businessType: 'Grocery',
     city: '',
+    address: '',
   });
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -172,6 +174,10 @@ export default function Login() {
 
     if (!registerForm.city.trim()) {
       newErrors.city = 'City is required';
+    }
+
+    if (!registerForm.address.trim()) {
+      newErrors.address = 'Address is required';
     }
 
     if (!registerForm.password) {
@@ -504,7 +510,7 @@ export default function Login() {
         {/* TAB 2: REGISTER FORM */}
         {activeTab === 'register' && (
           <Box component="form" onSubmit={handleRegisterSubmit} noValidate sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* 2-Column Responsive Grid for 8 Fields */}
+            {/* 2-Column Responsive Grid for 9 Registration Fields */}
             <Box
               sx={{
                 display: 'grid',
@@ -712,7 +718,39 @@ export default function Login() {
                 </TextField>
               </Box>
 
-              {/* 7. Password */}
+              {/* 7. Address */}
+              <Box sx={{ gridColumn: { xs: '1fr', sm: 'span 2' } }}>
+                <Typography variant="caption" sx={{ color: ROJMEL_COLORS.textPrimary, fontWeight: 700, display: 'block', mb: 0.5 }}>
+                  Address *
+                </Typography>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder="Maninagar, Ahmedabad"
+                  value={registerForm.address}
+                  onChange={handleRegisterChange('address')}
+                  error={!!registerErrors.address}
+                  helperText={registerErrors.address}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <HomeWorkRoundedIcon sx={{ color: ROJMEL_COLORS.textSecondary, fontSize: 18 }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      bgcolor: '#F4F7FB',
+                      borderRadius: '10px',
+                      '& fieldset': { borderColor: '#E2E8F0' },
+                      '&:hover fieldset': { borderColor: ROJMEL_COLORS.activeBlue },
+                      '&.Mui-focused': { bgcolor: '#FFFFFF', '& fieldset': { borderColor: ROJMEL_COLORS.activeBlue } },
+                    },
+                  }}
+                />
+              </Box>
+
+              {/* 8. Password */}
               <Box>
                 <Typography variant="caption" sx={{ color: ROJMEL_COLORS.textPrimary, fontWeight: 700, display: 'block', mb: 0.5 }}>
                   Password *
@@ -757,7 +795,7 @@ export default function Login() {
                 />
               </Box>
 
-              {/* 8. Confirm Password */}
+              {/* 9. Confirm Password */}
               <Box>
                 <Typography variant="caption" sx={{ color: ROJMEL_COLORS.textPrimary, fontWeight: 700, display: 'block', mb: 0.5 }}>
                   Confirm Password *
