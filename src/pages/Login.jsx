@@ -8,7 +8,6 @@ import {
   Button,
   IconButton,
   InputAdornment,
-  Chip,
   Divider,
   MenuItem,
 } from '@mui/material';
@@ -23,7 +22,6 @@ import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 import LocationCityRoundedIcon from '@mui/icons-material/LocationCityRounded';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import LaunchRoundedIcon from '@mui/icons-material/LaunchRounded';
-import KeyRoundedIcon from '@mui/icons-material/KeyRounded';
 import AppRegistrationRoundedIcon from '@mui/icons-material/AppRegistrationRounded';
 import LoginRoundedIcon from '@mui/icons-material/LoginRounded';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -106,29 +104,6 @@ export default function Login() {
     if (registerErrors[field]) {
       setRegisterErrors((prev) => ({ ...prev, [field]: '' }));
     }
-  };
-
-  // Quick 1-click Demo Credentials for Login
-  const handleQuickFillLogin = () => {
-    setLoginForm({ email: 'yash@gmail.com', password: 'Strong@123' });
-    setLoginErrors({});
-    toast.info('Filled credentials: yash@gmail.com / Strong@123');
-  };
-
-  // Quick 1-click Demo Fill for Register matching exact requested user format
-  const handleQuickFillRegister = () => {
-    setRegisterForm({
-      ownerName: 'Yash Ranpura',
-      email: 'yash@gmail.com',
-      mobile: '9876543210',
-      password: 'Strong@123',
-      confirmPassword: 'Strong@123',
-      shopName: 'Yash General Store',
-      businessType: 'Grocery',
-      city: 'Ahmedabad',
-    });
-    setRegisterErrors({});
-    toast.info('Demo registration data filled!');
   };
 
   // Handle Login Submit
@@ -500,49 +475,6 @@ export default function Login() {
               {loginLoading ? 'Opening ledger...' : 'Sign in to Ledger'}
             </Button>
 
-            {/* Quick Auto-Fill Demo Credentials Card */}
-            <Box
-              onClick={handleQuickFillLogin}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                p: 1.5,
-                borderRadius: '14px',
-                bgcolor: '#F0F6FD',
-                border: '1px dashed #B0C4DD',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  bgcolor: '#E4EFFC',
-                  borderColor: ROJMEL_COLORS.activeBlue,
-                },
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
-                <KeyRoundedIcon sx={{ color: ROJMEL_COLORS.activeBlue, fontSize: 20 }} />
-                <Box>
-                  <Typography variant="caption" fontWeight={700} sx={{ color: ROJMEL_COLORS.textPrimary, display: 'block' }}>
-                    1-Click Demo Login (Yash Ranpura)
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: ROJMEL_COLORS.textSecondary }}>
-                    yash@gmail.com • Strong@123
-                  </Typography>
-                </Box>
-              </Box>
-              <Chip
-                size="small"
-                label="Fill"
-                sx={{
-                  bgcolor: ROJMEL_COLORS.activeBlue,
-                  color: '#FFFFFF',
-                  fontWeight: 700,
-                  height: 24,
-                  fontSize: '0.75rem',
-                }}
-              />
-            </Box>
-
             {/* Prompt to register */}
             <Box sx={{ textAlign: 'center', mt: 0.5 }}>
               <Typography variant="body2" sx={{ color: ROJMEL_COLORS.textSecondary, fontSize: '0.88rem' }}>
@@ -890,49 +822,6 @@ export default function Login() {
             >
               {registerLoading ? 'Creating Account...' : 'Create Business Account'}
             </Button>
-
-            {/* Quick 1-Click Demo Register Fill */}
-            <Box
-              onClick={handleQuickFillRegister}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                p: 1.3,
-                borderRadius: '12px',
-                bgcolor: '#F0F6FD',
-                border: '1px dashed #B0C4DD',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  bgcolor: '#E4EFFC',
-                  borderColor: ROJMEL_COLORS.activeBlue,
-                },
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
-                <KeyRoundedIcon sx={{ color: ROJMEL_COLORS.activeBlue, fontSize: 18 }} />
-                <Box>
-                  <Typography variant="caption" fontWeight={700} sx={{ color: ROJMEL_COLORS.textPrimary, display: 'block' }}>
-                    1-Click Fill Yash Ranpura Demo Data
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: ROJMEL_COLORS.textSecondary }}>
-                    yash@gmail.com • Yash General Store
-                  </Typography>
-                </Box>
-              </Box>
-              <Chip
-                size="small"
-                label="Fill All"
-                sx={{
-                  bgcolor: ROJMEL_COLORS.activeBlue,
-                  color: '#FFFFFF',
-                  fontWeight: 700,
-                  height: 22,
-                  fontSize: '0.72rem',
-                }}
-              />
-            </Box>
 
             {/* Prompt to login */}
             <Box sx={{ textAlign: 'center', mt: 0.5 }}>
