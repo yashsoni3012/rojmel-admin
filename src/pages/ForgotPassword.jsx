@@ -7,7 +7,6 @@ import {
   TextField,
   Button,
   InputAdornment,
-  Chip,
   Divider,
 } from '@mui/material';
 import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
@@ -15,9 +14,8 @@ import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import MarkEmailReadRoundedIcon from '@mui/icons-material/MarkEmailReadRounded';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
-import KeyRoundedIcon from '@mui/icons-material/KeyRounded';
 import { useToast } from '../context/ToastContext.jsx';
-import { env } from '../config/env.js';
+import { authService } from '../services/authService.js';
 
 // Rojmel App Blue Palette: active tab #1761B6, sidebar #C8D9ED, border #B0C4DD
 const ROJMEL_COLORS = {
@@ -38,7 +36,7 @@ export default function ForgotPassword() {
   const [submitted, setSubmitted] = useState(false);
   const [resending, setResending] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const trimmed = email.trim();
     if (!trimmed) {
@@ -52,27 +50,29 @@ export default function ForgotPassword() {
     setError('');
     setLoading(true);
 
-    // Simulate sending reset instructions
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await authService.forgotPassword(trimmed);
       setSubmitted(true);
       toast.success(`Password reset instructions sent to ${trimmed}!`);
-    }, 750);
+    } catch (err) {
+      const msg = err.message || 'Failed to send reset link';
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     setResending(true);
-    setTimeout(() => {
-      setResending(false);
+    try {
+      await authService.forgotPassword(email.trim());
       toast.info(`A new reset link has been dispatched to ${email.trim()}!`);
-    }, 700);
-  };
-
-  const handleFillDemo = () => {
-    const demoEmail = env.demoEmail || 'admin@rojmel.app';
-    setEmail(demoEmail);
-    setError('');
-    toast.info('Demo email filled!');
+    } catch (err) {
+      toast.error(err.message || 'Failed to resend reset link');
+    } finally {
+      setResending(false);
+    }
   };
 
   return (
@@ -334,55 +334,6 @@ export default function ForgotPassword() {
               >
                 <ArrowBackRoundedIcon sx={{ fontSize: 16 }} /> Back to Sign In
               </Typography>
-            </Box>
-
-            <Divider sx={{ my: 0.5 }}>
-              <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 600 }}>
-                QUICK DEMO
-              </Typography>
-            </Divider>
-
-            {/* Quick Demo Fill Credentials Button */}
-            <Box
-              onClick={handleFillDemo}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                p: 1.5,
-                borderRadius: '14px',
-                bgcolor: '#F0F6FD',
-                border: '1px dashed #B0C4DD',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  bgcolor: '#E4EFFC',
-                  borderColor: ROJMEL_COLORS.activeBlue,
-                },
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
-                <KeyRoundedIcon sx={{ color: ROJMEL_COLORS.activeBlue, fontSize: 20 }} />
-                <Box>
-                  <Typography variant="caption" fontWeight={700} sx={{ color: ROJMEL_COLORS.textPrimary, display: 'block' }}>
-                    1-Click Demo Email
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: ROJMEL_COLORS.textSecondary }}>
-                    admin@rojmel.app
-                  </Typography>
-                </Box>
-              </Box>
-              <Chip
-                size="small"
-                label="Fill"
-                sx={{
-                  bgcolor: ROJMEL_COLORS.activeBlue,
-                  color: '#FFFFFF',
-                  fontWeight: 700,
-                  height: 24,
-                  fontSize: '0.75rem',
-                }}
-              />
             </Box>
           </Box>
         )}

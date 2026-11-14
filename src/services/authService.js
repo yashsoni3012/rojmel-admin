@@ -166,6 +166,95 @@ export const authService = {
   },
 
   /**
+   * Forgot Password API: POST /api/auth/forgot-password
+   * Format: { email: "user@example.com" }
+   */
+  async forgotPassword(email) {
+    const payload = {
+      email: (email || '').trim().toLowerCase(),
+    };
+
+    const endpoint = (env.apiUrl ? env.apiUrl.replace(/\/$/, '') : '') + '/api/auth/forgot-password';
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        return await res.json().catch(() => ({ success: true }));
+      }
+
+      const errData = await res.json().catch(() => null);
+      const errorMessage =
+        errData?.message ||
+        errData?.error ||
+        'Failed to send password reset email. Please verify your email address.';
+      throw new Error(errorMessage);
+    } catch (err) {
+      if (err.message === 'Failed to fetch' || err.message?.includes('NetworkError') || err.message === 'Load failed') {
+        throw new Error('Unable to connect to backend server. Please verify your backend API is running.');
+      }
+      throw err;
+    }
+  },
+
+  /**
+   * Reset Password API: POST /api/auth/reset-password/:token
+   * Format: { password: "...", confirmPassword: "..." }
+   */
+  async resetPassword(token, password, confirmPassword) {
+    const payload = {
+      password,
+      confirmPassword: confirmPassword || password,
+    };
+
+    const cleanToken = encodeURIComponent((token || '').trim());
+    const base = env.apiUrl ? env.apiUrl.replace(/\/$/, '') : '';
+    const endpoint = `${base}/api/auth/reset-password/${cleanToken}`;
+
+    try {
+      let res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      // If server only accepts PUT for reset-password, fallback to PUT
+      if (res.status === 405) {
+        res = await fetch(endpoint, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+      }
+
+      if (res.ok) {
+        return await res.json().catch(() => ({ success: true }));
+      }
+
+      const errData = await res.json().catch(() => null);
+      const errorMessage =
+        errData?.message ||
+        errData?.error ||
+        (res.status === 400 || res.status === 404
+          ? 'Reset token is invalid or has expired. Please request a new link.'
+          : 'Failed to reset password');
+      throw new Error(errorMessage);
+    } catch (err) {
+      if (err.message === 'Failed to fetch' || err.message?.includes('NetworkError') || err.message === 'Load failed') {
+        throw new Error('Unable to connect to backend server. Please verify your backend API is running.');
+      }
+      throw err;
+    }
+  },
+
+  /**
    * Logout API: POST /api/auth/logout
    * - Clears cookies and removes user from client
    */
