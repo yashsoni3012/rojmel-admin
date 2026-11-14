@@ -283,7 +283,8 @@ export const authService = {
         const data = await res.json().catch(() => ({}));
         const rawUser = data.data || data.user || data;
         const user = {
-          name: rawUser.ownerName || rawUser.name || '',
+          _id: rawUser._id,
+          name: rawUser.name || rawUser.ownerName || '',
           ownerName: rawUser.ownerName || rawUser.name || '',
           email: rawUser.email || '',
           mobile: rawUser.mobile || '',
@@ -292,6 +293,7 @@ export const authService = {
           city: rawUser.city || '',
           address: rawUser.address || '',
           role: rawUser.role || 'owner',
+          profileImage: rawUser.profileImage || null,
         };
         storage.set(USER_KEY, user);
         return user;
@@ -320,13 +322,16 @@ export const authService = {
    * }
    */
   async updateProfile(profileData) {
+    const effectiveName = (profileData.name || profileData.ownerName || '').trim();
     const payload = {
-      ownerName: (profileData.ownerName || '').trim(),
+      name: effectiveName,
+      ownerName: effectiveName,
       mobile: (profileData.mobile || '').trim(),
       shopName: (profileData.shopName || '').trim(),
       businessType: (profileData.businessType || '').trim(),
       city: (profileData.city || '').trim(),
       address: (profileData.address || '').trim(),
+      profileImage: profileData.profileImage !== undefined ? profileData.profileImage : null,
     };
 
     const base = env.apiUrl ? env.apiUrl.replace(/\/$/, '') : '';
@@ -357,8 +362,12 @@ export const authService = {
         const updatedUser = {
           ...currentUser,
           ...payload,
-          name: payload.ownerName || currentUser.name,
+          _id: rawUser._id || currentUser._id,
+          name: payload.name || currentUser.name,
+          ownerName: payload.ownerName || currentUser.ownerName,
           email: rawUser.email || currentUser.email,
+          role: rawUser.role || currentUser.role || 'owner',
+          profileImage: rawUser.profileImage !== undefined ? rawUser.profileImage : payload.profileImage,
         };
         storage.set(USER_KEY, updatedUser);
         return updatedUser;

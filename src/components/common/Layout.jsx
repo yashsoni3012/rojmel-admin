@@ -439,6 +439,7 @@ export default function Layout() {
               }}
             >
               <Avatar
+                src={user?.profileImage || undefined}
                 sx={{
                   width: 36,
                   height: 36,
@@ -449,7 +450,7 @@ export default function Layout() {
                   border: '2px solid #1761B6',
                 }}
               >
-                {user?.name?.[0]?.toUpperCase() || 'U'}
+                {!user?.profileImage && (user?.name?.[0]?.toUpperCase() || 'U')}
               </Avatar>
               <Box sx={{ display: { xs: 'none', lg: 'block' }, pr: 0.5 }}>
                 <Typography variant="body2" fontWeight={700} sx={{ color: '#18233F', lineHeight: 1.1, fontSize: '0.84rem' }}>
