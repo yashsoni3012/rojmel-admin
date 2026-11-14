@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Paper,
@@ -211,9 +211,26 @@ export default function Login() {
           </Box>
 
           <Box>
-            <Typography variant="caption" sx={{ color: ROJMEL_COLORS.textPrimary, fontWeight: 700, display: 'block', mb: 0.75 }}>
-              Password
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.75 }}>
+              <Typography variant="caption" sx={{ color: ROJMEL_COLORS.textPrimary, fontWeight: 700 }}>
+                Password
+              </Typography>
+              <Typography
+                component={Link}
+                to="/forgot-password"
+                variant="caption"
+                sx={{
+                  color: ROJMEL_COLORS.activeBlue,
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                  transition: 'color 0.15s ease',
+                  '&:hover': { textDecoration: 'underline', color: '#134F94' },
+                }}
+              >
+                Forgot password?
+              </Typography>
+            </Box>
             <TextField
               fullWidth
               size="medium"

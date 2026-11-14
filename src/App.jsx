@@ -7,6 +7,7 @@ import { CATEGORIES } from './utils.js';
 
 // Lazy-loaded normal app page modules
 const Login = lazy(() => import('./pages/Login.jsx'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword.jsx'));
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
 const Daily = lazy(() => import('./pages/Daily.jsx'));
 const EntryPage = lazy(() => import('./pages/EntryPage.jsx'));
@@ -26,6 +27,7 @@ export default function App() {
       <Routes>
         {/* Normal Rojmel App Routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
             <Route index element={<Dashboard />} />
