@@ -26,6 +26,7 @@ import AppRegistrationRoundedIcon from '@mui/icons-material/AppRegistrationRound
 import LoginRoundedIcon from '@mui/icons-material/LoginRounded';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
+import PageSkeleton from '../components/common/PageSkeleton.jsx';
 import { env } from '../config/env.js';
 
 // Rojmel App Blue Palette: active tab #1761B6, sidebar #C8D9ED, border #B0C4DD
@@ -52,7 +53,7 @@ const BUSINESS_TYPES = [
 ];
 
 export default function Login() {
-  const { isAuthed, login, register } = useAuth();
+  const { isAuthed, loading, login, register } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -84,6 +85,10 @@ export default function Login() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [registerErrors, setRegisterErrors] = useState({});
   const [registerLoading, setRegisterLoading] = useState(false);
+
+  if (loading) {
+    return <PageSkeleton />;
+  }
 
   if (isAuthed) {
     const dest = location.state?.from?.pathname || '/';

@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { authService } from '../services/authService.js';
 import { useToast } from './ToastContext.jsx';
 
@@ -7,14 +7,42 @@ const Ctx = createContext(null);
 export function AuthProvider({ children }) {
   const toast = useToast();
   const [session, setSession] = useState(() => authService.current());
+  const [loading, setLoading] = useState(true);
+
+  // Authenticate via HttpOnly cookie session and get fresh user profile from API
+  useEffect(() => {
+    let mounted = true;
+    authService
+      .getProfile()
+      .then((userData) => {
+        if (mounted && userData) {
+          setSession({ user: userData });
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setSession(null);
+        }
+      })
+      .finally(() => {
+        if (mounted) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const value = useMemo(() => ({
     user: session?.user,
-    isAuthed: !!session,
+    isAuthed: !!session?.user,
+    loading,
     async login(credentials) {
       const s = await authService.login(credentials);
       setSession(s);
-      toast.success(`Welcome back, ${s.user.name}`);
+      toast.success(`Welcome back, ${s.user.name || s.user.ownerName || 'User'}`);
       return s;
     },
     async register(data) {
@@ -41,8 +69,9 @@ export function AuthProvider({ children }) {
       setSession(null);
       toast.info('You have been logged out');
     },
-  }), [session, toast]);
+  }), [session, loading, toast]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
+
 export const useAuth = () => useContext(Ctx);

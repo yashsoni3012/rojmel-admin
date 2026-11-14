@@ -1,7 +1,6 @@
 import { env } from '../config/env.js';
-import { storage } from './storage.js';
 
-const USER_KEY = 'user_profile';
+let currentUserInMemory = null;
 
 // Helper to write to Cookie Storage
 function setCookie(name, value, days = 7) {
@@ -22,17 +21,15 @@ function removeCookie(name) {
   }
 }
 
-// Clean up any token previously stored in Local Storage
+// Clean up any user profile, session, or token previously stored in Local Storage
 try {
-  storage.remove('registered_users');
-  storage.remove('token');
-  const legacySession = storage.get('session', null);
-  if (legacySession) {
-    if (legacySession.user) {
-      storage.set(USER_KEY, legacySession.user);
-    }
-    storage.remove('session');
-  }
+  localStorage.removeItem('rojmel-user_profile');
+  localStorage.removeItem('rojmel-session');
+  localStorage.removeItem('rojmel-token');
+  localStorage.removeItem('rojmel-registered_users');
+  localStorage.removeItem('user_profile');
+  localStorage.removeItem('session');
+  localStorage.removeItem('token');
 } catch {
   // ignore
 }
@@ -81,8 +78,8 @@ export const authService = {
           city: data.city,
         };
 
-        // Store ONLY user profile in storage (NO token in localStorage)
-        storage.set(USER_KEY, user);
+        // Keep user in memory only (NEVER in localStorage)
+        currentUserInMemory = user;
 
         return { user };
       }
@@ -295,7 +292,8 @@ export const authService = {
           role: rawUser.role || 'owner',
           profileImage: rawUser.profileImage || null,
         };
-        storage.set(USER_KEY, user);
+        // Keep in-memory only (NEVER in localStorage)
+        currentUserInMemory = user;
         return user;
       }
 
@@ -358,7 +356,7 @@ export const authService = {
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
         const rawUser = data.data || data.user || data;
-        const currentUser = storage.get(USER_KEY, {}) || {};
+        const currentUser = currentUserInMemory || {};
         const updatedUser = {
           ...currentUser,
           ...payload,
@@ -369,7 +367,8 @@ export const authService = {
           role: rawUser.role || currentUser.role || 'owner',
           profileImage: rawUser.profileImage !== undefined ? rawUser.profileImage : payload.profileImage,
         };
-        storage.set(USER_KEY, updatedUser);
+        // Keep in-memory only (NEVER in localStorage)
+        currentUserInMemory = updatedUser;
         return updatedUser;
       }
 
@@ -452,17 +451,24 @@ export const authService = {
     // Clear client-side cookie
     removeCookie('token');
 
-    // Remove user profile from local storage
-    storage.remove(USER_KEY);
-    storage.remove('session');
-    storage.remove('token');
+    // Reset in-memory user
+    currentUserInMemory = null;
+
+    // Purge any local storage keys if any exist
+    try {
+      localStorage.removeItem('rojmel-user_profile');
+      localStorage.removeItem('rojmel-session');
+      localStorage.removeItem('rojmel-token');
+      localStorage.removeItem('rojmel-registered_users');
+    } catch {
+      // ignore
+    }
   },
 
   /**
-   * Get current authenticated user
+   * Get current authenticated user (in-memory only, NEVER from localStorage)
    */
   current() {
-    const user = storage.get(USER_KEY, null);
-    return user ? { user } : null;
+    return currentUserInMemory ? { user: currentUserInMemory } : null;
   },
 };
