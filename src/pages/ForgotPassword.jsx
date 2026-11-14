@@ -51,6 +51,9 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
+      try {
+        sessionStorage.setItem('pending_reset_email', trimmed);
+      } catch {}
       await authService.forgotPassword(trimmed);
       setSubmitted(true);
       toast.success(`Password reset instructions sent to ${trimmed}!`);

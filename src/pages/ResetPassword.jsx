@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import {
   Box,
   Paper,
@@ -13,12 +13,14 @@ import {
 import Visibility from '@mui/icons-material/VisibilityRounded';
 import VisibilityOff from '@mui/icons-material/VisibilityOffRounded';
 import LockRoundedIcon from '@mui/icons-material/LockRounded';
+import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 import { useToast } from '../context/ToastContext.jsx';
 import { authService } from '../services/authService.js';
+import { env } from '../config/env.js';
 
 // Rojmel Theme Colors
 const ROJMEL_COLORS = {
@@ -33,8 +35,49 @@ const ROJMEL_COLORS = {
 
 export default function ResetPassword() {
   const { token } = useParams();
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const toast = useToast();
+
+  // Smart email detection: URL query param, location state, sessionStorage, or decoded JWT payload
+  const [email, setEmail] = useState(() => {
+    // 1. From URL query param: ?email=user@example.com
+    const paramEmail = searchParams.get('email');
+    if (paramEmail && paramEmail.includes('@')) return paramEmail.trim();
+
+    // 2. From router location state
+    if (location.state?.email && location.state.email.includes('@')) {
+      return location.state.email.trim();
+    }
+
+    // 3. From sessionStorage if requested on same device
+    try {
+      const saved = sessionStorage.getItem('pending_reset_email');
+      if (saved && saved.includes('@')) return saved.trim();
+    } catch {
+      // ignore
+    }
+
+    // 4. Try parsing JWT payload if token is structured as a JWT
+    if (token && token.includes('.')) {
+      try {
+        const parts = token.split('.');
+        if (parts.length >= 2) {
+          const payloadJson = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
+          const payload = JSON.parse(payloadJson);
+          if (payload.email && typeof payload.email === 'string') return payload.email;
+          if (payload.sub && typeof payload.sub === 'string' && payload.sub.includes('@')) {
+            return payload.sub;
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    return '';
+  });
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -46,6 +89,35 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [countdown, setCountdown] = useState(4);
+
+  // Probe backend endpoint if email wasn't found in params/session/JWT
+  useEffect(() => {
+    if (!email && token) {
+      const base = env.apiUrl ? env.apiUrl.replace(/\/$/, '') : '';
+      const endpoint = `${base}/api/auth/reset-password/${encodeURIComponent(token)}`;
+
+      fetch(endpoint, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (!data) return;
+          const foundEmail =
+            data.email ||
+            data.data?.email ||
+            data.user?.email ||
+            data.userEmail;
+          if (foundEmail) {
+            setEmail(foundEmail);
+          }
+        })
+        .catch(() => {
+          // ignore
+        });
+    }
+  }, [email, token]);
 
   // Auto-redirect to /login on success
   useEffect(() => {
@@ -97,6 +169,11 @@ export default function ResetPassword() {
     setLoading(true);
     try {
       await authService.resetPassword(token, password, confirmPassword);
+      // Clean up temporary sessionStorage
+      try {
+        sessionStorage.removeItem('pending_reset_email');
+      } catch {}
+
       setSubmitted(true);
       toast.success('Your password has been successfully reset!');
     } catch (err) {
@@ -124,7 +201,7 @@ export default function ResetPassword() {
         elevation={0}
         sx={{
           width: '100%',
-          maxWidth: 440,
+          maxWidth: 460,
           borderRadius: '24px',
           bgcolor: ROJMEL_COLORS.white,
           border: `1px solid ${ROJMEL_COLORS.border}`,
@@ -237,6 +314,79 @@ export default function ResetPassword() {
         ) : (
           /* Form View */
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            {/* Read-Only Account Email Display */}
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.75 }}>
+                <Typography
+                  variant="caption"
+                  sx={{ color: ROJMEL_COLORS.textPrimary, fontWeight: 700, fontSize: '0.85rem' }}
+                >
+                  Resetting Password For
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    bgcolor: '#EBF3FB',
+                    color: ROJMEL_COLORS.activeBlue,
+                    px: 1,
+                    py: 0.25,
+                    borderRadius: '6px',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  <LockRoundedIcon sx={{ fontSize: 13 }} />
+                  Read Only
+                </Box>
+              </Box>
+
+              <TextField
+                fullWidth
+                size="medium"
+                value={email || 'Account email linked to this reset token'}
+                InputProps={{
+                  readOnly: true,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailRoundedIcon sx={{ color: ROJMEL_COLORS.activeBlue, fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: '#F1F5F9', // subtle neutral gray signaling read-only
+                    borderRadius: '12px',
+                    cursor: 'not-allowed',
+                    '& input': {
+                      color: '#1E293B',
+                      fontWeight: 700,
+                      fontSize: '0.94rem',
+                      cursor: 'not-allowed',
+                      WebkitTextFillColor: '#1E293B !important',
+                    },
+                    '& fieldset': {
+                      borderColor: '#CBD5E1',
+                      borderStyle: 'solid',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#94A3B8',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#94A3B8',
+                      borderWidth: '1px',
+                    },
+                  },
+                }}
+              />
+              <Typography variant="caption" sx={{ color: ROJMEL_COLORS.textSecondary, mt: 0.5, display: 'block', fontSize: '0.75rem' }}>
+                This reset token is securely associated with this account email.
+              </Typography>
+            </Box>
+
             {/* New Password Field */}
             <Box>
               <Typography
@@ -406,4 +556,3 @@ export default function ResetPassword() {
     </Box>
   );
 }
-
