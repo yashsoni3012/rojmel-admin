@@ -2,44 +2,12 @@ import { env } from '../config/env.js';
 import { storage } from './storage.js';
 
 const KEY = 'session';
-const REGISTERED_USERS_KEY = 'registered_users';
 
-const DEFAULT_USERS = [
-  {
-    ownerName: 'Yash Ranpura',
-    email: 'yash@gmail.com',
-    mobile: '9876543210',
-    password: 'Strong@123',
-    confirmPassword: 'Strong@123',
-    shopName: 'Yash General Store',
-    businessType: 'Grocery',
-    city: 'Ahmedabad',
-  },
-];
-
-function getRegisteredUsers() {
-  const users = storage.get(REGISTERED_USERS_KEY, null);
-  if (!users) {
-    storage.set(REGISTERED_USERS_KEY, DEFAULT_USERS);
-    return DEFAULT_USERS;
-  }
-  // Ensure default demo user exists
-  if (!users.some((u) => u.email?.toLowerCase() === 'yash@gmail.com')) {
-    users.unshift(...DEFAULT_USERS);
-    storage.set(REGISTERED_USERS_KEY, users);
-  }
-  return users;
-}
-
-function saveRegisteredUser(user) {
-  const users = getRegisteredUsers();
-  const idx = users.findIndex((u) => u.email?.toLowerCase() === user.email?.toLowerCase());
-  if (idx >= 0) {
-    users[idx] = user;
-  } else {
-    users.push(user);
-  }
-  storage.set(REGISTERED_USERS_KEY, users);
+// Clean up any legacy registered_users key from localStorage if it exists
+try {
+  storage.remove('registered_users');
+} catch {
+  // ignore
 }
 
 export const authService = {
@@ -69,7 +37,7 @@ export const authService = {
       if (res.ok) {
         const data = await res.json();
         const session = {
-          token: data.token || data.data?.token || crypto.randomUUID(),
+          token: data.token || data.data?.token || data.accessToken || crypto.randomUUID(),
           user: data.user || data.data?.user || {
             name: data.ownerName || data.name || payload.email.split('@')[0],
             email: payload.email,
@@ -78,82 +46,24 @@ export const authService = {
             city: data.city,
           },
         };
+        // Store only the active auth session (JWT/token) in storage
         storage.set(KEY, session);
         return session;
       }
 
-      // If server returned 401 with a specific backend message
-      if (res.status === 401) {
-        const errData = await res.json().catch(() => null);
-        if (errData?.message) {
-          throw new Error(errData.message);
-        }
-      }
+      // Handle backend error responses (400, 401, 403, 404, 500)
+      const errData = await res.json().catch(() => null);
+      const errorMessage =
+        errData?.message ||
+        errData?.error ||
+        (res.status === 401 ? 'Invalid email or password' : 'Login failed');
+      throw new Error(errorMessage);
     } catch (err) {
-      if (
-        err.message &&
-        err.message !== 'Failed to fetch' &&
-        !err.message.includes('NetworkError') &&
-        err.message !== 'Load failed' &&
-        !err.message.includes('404')
-      ) {
-        throw err;
+      if (err.message === 'Failed to fetch' || err.message?.includes('NetworkError') || err.message === 'Load failed') {
+        throw new Error('Unable to connect to backend server. Please verify your backend API is running.');
       }
+      throw err;
     }
-
-    // Client-side fallback for development / offline / demo verification:
-    const registeredUsers = getRegisteredUsers();
-    const matched = registeredUsers.find(
-      (u) => u.email?.toLowerCase() === payload.email && u.password === payload.password
-    );
-
-    if (matched) {
-      const session = {
-        token: crypto.randomUUID(),
-        user: {
-          name: matched.ownerName || matched.shopName || matched.email.split('@')[0],
-          email: matched.email,
-          mobile: matched.mobile,
-          shopName: matched.shopName,
-          businessType: matched.businessType,
-          city: matched.city,
-        },
-      };
-      storage.set(KEY, session);
-      return session;
-    }
-
-    // Check Yash Ranpura credentials
-    if (payload.email === 'yash@gmail.com' && payload.password === 'Strong@123') {
-      const session = {
-        token: crypto.randomUUID(),
-        user: {
-          name: 'Yash Ranpura',
-          email: 'yash@gmail.com',
-          mobile: '9876543210',
-          shopName: 'Yash General Store',
-          businessType: 'Grocery',
-          city: 'Ahmedabad',
-        },
-      };
-      storage.set(KEY, session);
-      return session;
-    }
-
-    // Check predefined demo credentials
-    const validEmail = (env.demoEmail || 'admin@rojmel.app').toLowerCase();
-    const validPassword = env.demoPassword || 'Admin@123';
-
-    if (payload.email === validEmail && payload.password === validPassword) {
-      const session = {
-        token: crypto.randomUUID(),
-        user: { name: 'Admin', email: validEmail, shopName: 'Rojmel Demo Store' },
-      };
-      storage.set(KEY, session);
-      return session;
-    }
-
-    throw new Error('Email or password is incorrect');
   },
 
   /**
@@ -193,36 +103,25 @@ export const authService = {
 
       if (res.ok) {
         const resData = await res.json().catch(() => ({}));
-        saveRegisteredUser(payload);
+        // Strictly return API response - DO NOT store user in localStorage
         return resData;
       }
 
+      // Handle backend error responses (400, 409, etc.)
       const errData = await res.json().catch(() => null);
-      if (res.status === 400 || res.status === 409) {
-        throw new Error(errData?.message || errData?.error || 'Registration failed. Email or mobile may already be in use.');
-      }
+      const errorMessage =
+        errData?.message ||
+        errData?.error ||
+        (res.status === 409 ? 'Email or mobile is already registered' : 'Registration failed');
+      throw new Error(errorMessage);
     } catch (err) {
-      if (
-        err.message &&
-        err.message !== 'Failed to fetch' &&
-        !err.message.includes('NetworkError') &&
-        err.message !== 'Load failed' &&
-        !err.message.includes('404')
-      ) {
-        throw err;
+      if (err.message === 'Failed to fetch' || err.message?.includes('NetworkError') || err.message === 'Load failed') {
+        throw new Error('Unable to connect to backend server. Please verify your backend API is running.');
       }
+      throw err;
     }
-
-    // Persist registered user so they can immediately log in
-    saveRegisteredUser(payload);
-    return {
-      success: true,
-      message: 'Account registered successfully',
-      data: payload,
-    };
   },
 
   logout: () => storage.remove(KEY),
   current: () => storage.get(KEY, null),
-  getRegisteredUsers,
 };
