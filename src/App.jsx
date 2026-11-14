@@ -28,6 +28,7 @@ export default function App() {
       <Routes>
         {/* Normal Rojmel App Routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />

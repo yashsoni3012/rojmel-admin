@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Paper,
@@ -57,9 +57,14 @@ export default function Login() {
   const { isAuthed, loading, login, register } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Tab: 'login' | 'register'
-  const [activeTab, setActiveTab] = useState('login');
+  // Tab driven by URL: /register -> 'register' tab, /login -> 'login' tab
+  const activeTab = location.pathname === '/register' ? 'register' : 'login';
+
+  const switchTab = (tab) => {
+    navigate(tab === 'register' ? '/register' : '/login');
+  };
 
   // Login form state
   const [loginForm, setLoginForm] = useState({
@@ -307,7 +312,7 @@ export default function Login() {
           }}
         >
           <Button
-            onClick={() => setActiveTab('login')}
+            onClick={() => switchTab('login')}
             startIcon={<LoginRoundedIcon sx={{ fontSize: 18 }} />}
             sx={{
               flex: 1,
@@ -329,7 +334,7 @@ export default function Login() {
             Sign In
           </Button>
           <Button
-            onClick={() => setActiveTab('register')}
+            onClick={() => switchTab('register')}
             startIcon={<AppRegistrationRoundedIcon sx={{ fontSize: 18 }} />}
             sx={{
               flex: 1,
@@ -491,7 +496,7 @@ export default function Login() {
                 Don't have a business account?{' '}
                 <Typography
                   component="span"
-                  onClick={() => setActiveTab('register')}
+                  onClick={() => switchTab('register')}
                   sx={{
                     color: ROJMEL_COLORS.activeBlue,
                     fontWeight: 700,
@@ -871,7 +876,7 @@ export default function Login() {
                 Already registered?{' '}
                 <Typography
                   component="span"
-                  onClick={() => setActiveTab('login')}
+                  onClick={() => switchTab('login')}
                   sx={{
                     color: ROJMEL_COLORS.activeBlue,
                     fontWeight: 700,
