@@ -138,7 +138,7 @@ export default function EntryPage({ title, subtitle, type, categories, fixedCate
                 onChange={(e) => setCat(e.target.value)}
                 startAdornment={
                   <InputAdornment position="start" sx={{ pl: 0.5, mr: 0.5 }}>
-                    <FilterListRoundedIcon sx={{ fontSize: 20, color: '#3454D1' }} />
+                    <FilterListRoundedIcon sx={{ fontSize: 20, color: '#1761B6' }} />
                   </InputAdornment>
                 }
                 sx={{
@@ -148,7 +148,7 @@ export default function EntryPage({ title, subtitle, type, categories, fixedCate
                   fontSize: '0.88rem',
                   '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
                   '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94A3B8' },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#3454D1' },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#1761B6' },
                 }}
               >
                 <MenuItem value="All" sx={{ fontWeight: 600, fontSize: '0.88rem' }}>
@@ -198,8 +198,8 @@ export default function EntryPage({ title, subtitle, type, categories, fixedCate
               label={`Filter: "${search}"`}
               onDelete={() => setSearch('')}
               sx={{
-                bgcolor: 'rgba(52, 84, 209, 0.08)',
-                color: '#3454D1',
+                bgcolor: 'rgba(23, 97, 182, 0.08)',
+                color: '#1761B6',
                 fontWeight: 600,
                 fontSize: '0.78rem',
               }}

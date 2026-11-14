@@ -175,8 +175,8 @@ export default function Subscription() {
                 width: 44,
                 height: 44,
                 borderRadius: 2.5,
-                bgcolor: 'rgba(52, 84, 209, 0.08)',
-                color: '#3454D1',
+                bgcolor: 'rgba(23, 97, 182, 0.08)',
+                color: '#1761B6',
                 display: 'grid',
                 placeItems: 'center',
                 flexShrink: 0,
@@ -194,7 +194,7 @@ export default function Subscription() {
                   : `Valid till ${prettyDate(subscription?.expiryDate)}`}
               </Typography>
               {subscription?.expiryDate !== 'Lifetime' && (
-                <Typography variant="caption" sx={{ color: '#3454D1', fontWeight: 700 }}>
+                <Typography variant="caption" sx={{ color: '#1761B6', fontWeight: 700 }}>
                   ⏳ {subscription?.daysLeft ?? 365} days remaining
                 </Typography>
               )}
@@ -226,36 +226,36 @@ export default function Subscription() {
           }}
         >
           <Button
-            size="small"
             onClick={() => setCycle('monthly')}
             sx={{
-              px: 2.5,
-              py: 0.8,
-              borderRadius: '9px',
+              px: 3,
+              py: 1,
+              minHeight: 42,
+              borderRadius: '10px',
               fontWeight: 700,
-              fontSize: '0.85rem',
-              bgcolor: cycle === 'monthly' ? '#3454D1' : 'transparent',
+              fontSize: '0.9rem',
+              bgcolor: cycle === 'monthly' ? '#1761B6' : 'transparent',
               color: cycle === 'monthly' ? '#FFFFFF' : '#64748B',
               '&:hover': {
-                bgcolor: cycle === 'monthly' ? '#2B46B3' : 'rgba(0,0,0,0.04)',
+                bgcolor: cycle === 'monthly' ? '#124E94' : 'rgba(0,0,0,0.04)',
               },
             }}
           >
             Monthly Billing
           </Button>
           <Button
-            size="small"
             onClick={() => setCycle('yearly')}
             sx={{
-              px: 2.5,
-              py: 0.8,
-              borderRadius: '9px',
+              px: 3,
+              py: 1,
+              minHeight: 42,
+              borderRadius: '10px',
               fontWeight: 700,
-              fontSize: '0.85rem',
-              bgcolor: cycle === 'yearly' ? '#3454D1' : 'transparent',
+              fontSize: '0.9rem',
+              bgcolor: cycle === 'yearly' ? '#1761B6' : 'transparent',
               color: cycle === 'yearly' ? '#FFFFFF' : '#64748B',
               '&:hover': {
-                bgcolor: cycle === 'yearly' ? '#2B46B3' : 'rgba(0,0,0,0.04)',
+                bgcolor: cycle === 'yearly' ? '#124E94' : 'rgba(0,0,0,0.04)',
               },
             }}
           >
@@ -296,7 +296,7 @@ export default function Subscription() {
           <Button
             size="small"
             onClick={() => setSearch('')}
-            sx={{ mt: 1, textTransform: 'none', fontWeight: 700, color: '#3454D1' }}
+            sx={{ mt: 1, textTransform: 'none', fontWeight: 700, color: '#1761B6' }}
           >
             Clear Search Filter
           </Button>
@@ -330,7 +330,7 @@ export default function Subscription() {
                   p: 3,
                   borderRadius: 3.5,
                   border: isCurrent
-                    ? '2px solid #3454D1'
+                    ? '2px solid #1761B6'
                     : p.popular
                     ? '2px solid #3B82F6'
                     : '1px solid #E2E8F0',
@@ -340,7 +340,7 @@ export default function Subscription() {
                   position: 'relative',
                   transition: 'all 0.2s ease',
                   boxShadow: isCurrent
-                    ? '0 10px 30px rgba(52, 84, 209, 0.12)'
+                    ? '0 10px 30px rgba(23, 97, 182, 0.12)'
                     : '0 2px 10px rgba(0,0,0,0.02)',
                   '&:hover': {
                     transform: 'translateY(-3px)',
@@ -356,8 +356,8 @@ export default function Subscription() {
                     sx={{
                       fontWeight: 700,
                       fontSize: '0.72rem',
-                      bgcolor: p.popular ? 'rgba(52, 84, 209, 0.1)' : 'rgba(100, 116, 139, 0.1)',
-                      color: p.popular ? '#3454D1' : '#475569',
+                      bgcolor: p.popular ? 'rgba(23, 97, 182, 0.1)' : 'rgba(100, 116, 139, 0.1)',
+                      color: p.popular ? '#1761B6' : '#475569',
                     }}
                   />
                   {isCurrent && (
@@ -414,10 +414,13 @@ export default function Subscription() {
                   disabled
                   variant="outlined"
                   sx={{
-                    borderRadius: '10px',
+                    borderRadius: '12px',
                     fontWeight: 700,
-                    borderColor: '#3454D1',
-                    color: '#3454D1 !important',
+                    minHeight: 46,
+                    py: 1.3,
+                    fontSize: '0.96rem',
+                    borderColor: '#1761B6',
+                    color: '#1761B6 !important',
                   }}
                 >
                   ✓ Active Plan
@@ -428,11 +431,16 @@ export default function Subscription() {
                   variant="contained"
                   onClick={() => handleOpenUpgrade(p)}
                   sx={{
-                    borderRadius: '10px',
+                    borderRadius: '12px',
                     fontWeight: 700,
-                    bgcolor: p.popular ? '#3454D1' : '#18233F',
+                    minHeight: 46,
+                    py: 1.3,
+                    fontSize: '0.96rem',
+                    bgcolor: p.popular ? '#1761B6' : '#18233F',
+                    boxShadow: 'none',
                     '&:hover': {
-                      bgcolor: p.popular ? '#2843B5' : '#0F172A',
+                      bgcolor: p.popular ? '#124E94' : '#0F172A',
+                      boxShadow: 'none',
                     },
                   }}
                 >
@@ -448,7 +456,7 @@ export default function Subscription() {
       {/* Subscription Billing & Invoices History Table */}
       <Box sx={{ mt: 5 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-          <ReceiptLongRoundedIcon sx={{ color: '#3454D1', fontSize: 24 }} />
+          <ReceiptLongRoundedIcon sx={{ color: '#1761B6', fontSize: 24 }} />
           <Typography variant="h6" fontWeight={700} sx={{ color: '#18233F' }}>
             Subscription & Billing History
           </Typography>
@@ -489,7 +497,7 @@ export default function Subscription() {
                   filteredHistory.map((inv, idx) => (
                     <TableRow key={inv?.invoiceId || `inv-${idx}`} hover>
                       <TableCell sx={{ fontWeight: 600, color: '#18233F' }}>{inv?.invoiceId || 'N/A'}</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: '#3454D1' }}>{inv?.planName || 'Plan'}</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: '#1761B6' }}>{inv?.planName || 'Plan'}</TableCell>
                       <TableCell sx={{ textTransform: 'capitalize', color: '#64748B', fontWeight: 600 }}>
                         {inv?.cycle || 'yearly'}
                       </TableCell>
@@ -527,9 +535,9 @@ export default function Subscription() {
                             px: 1.5,
                             whiteSpace: 'nowrap',
                             '&:hover': {
-                              borderColor: '#3454D1',
-                              bgcolor: 'rgba(52, 84, 209, 0.05)',
-                              color: '#3454D1',
+                              borderColor: '#1761B6',
+                              bgcolor: 'rgba(23, 97, 182, 0.05)',
+                              color: '#1761B6',
                             },
                           }}
                         >
@@ -585,7 +593,7 @@ export default function Subscription() {
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="body2" color="text.secondary">Validity:</Typography>
-                  <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#3454D1' }}>
+                  <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#1761B6' }}>
                     {selectedPlan.isLifetime
                       ? 'Lifetime (Never Expires)'
                       : cycle === 'yearly'
@@ -618,7 +626,7 @@ export default function Subscription() {
                     control={<Radio size="small" />}
                     label={
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <CreditCardRoundedIcon sx={{ fontSize: 18, color: '#3454D1' }} />
+                        <CreditCardRoundedIcon sx={{ fontSize: 18, color: '#1761B6' }} />
                         <Typography variant="body2" fontWeight={600}>
                           Instant Demo Activation (No real card required)
                         </Typography>
@@ -649,10 +657,14 @@ export default function Subscription() {
             onClick={handleConfirmUpgrade}
             sx={{
               fontWeight: 700,
-              bgcolor: '#3454D1',
-              px: 3,
-              borderRadius: '10px',
-              '&:hover': { bgcolor: '#2A45B5' },
+              bgcolor: '#1761B6',
+              px: 3.5,
+              py: 1.3,
+              minHeight: 46,
+              fontSize: '0.96rem',
+              borderRadius: '12px',
+              boxShadow: 'none',
+              '&:hover': { bgcolor: '#124E94', boxShadow: 'none' },
             }}
           >
             Confirm & Activate

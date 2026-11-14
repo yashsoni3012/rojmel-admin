@@ -82,7 +82,7 @@ export default function Dashboard() {
         <StatCard
           label="Left to spend"
           value={inr(balance)}
-          color={balance >= 0 ? '#3454D1' : '#E5484D'}
+          color={balance >= 0 ? '#1761B6' : '#E5484D'}
           icon={<BalanceIcon />}
           hint="Income − expenses − savings"
         />
@@ -134,7 +134,7 @@ export default function Dashboard() {
                   style={{
                     height: `${(d.val / max) * 100}%`,
                     minHeight: 4,
-                    background: d.key === today() ? '#3454D1' : '#C7D2F5',
+                    background: d.key === today() ? '#1761B6' : '#C8D9ED',
                   }}
                 />
                 <span className="text-xs text-slate-500 mt-1">{d.label}</span>
@@ -165,8 +165,8 @@ export default function Dashboard() {
               label={`Filter: "${search}"`}
               onDelete={() => setSearch('')}
               sx={{
-                bgcolor: 'rgba(52, 84, 209, 0.08)',
-                color: '#3454D1',
+                bgcolor: 'rgba(23, 97, 182, 0.08)',
+                color: '#1761B6',
                 fontWeight: 600,
                 fontSize: '0.78rem',
               }}

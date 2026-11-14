@@ -6,6 +6,7 @@ import App from './App.jsx';
 import theme from './theme.js';
 import { ToastProvider } from './context/ToastContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
+import { AdminAuthProvider } from './admin/context/AdminAuthContext.jsx';
 import { SettingsProvider } from './context/SettingsContext.jsx';
 import { FinanceProvider } from './context/FinanceContext.jsx';
 import { SubscriptionProvider } from './context/SubscriptionContext.jsx';
@@ -16,17 +17,19 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <ToastProvider>
-        <AuthProvider>
-          <SubscriptionProvider>
-            <SettingsProvider>
-              <FinanceProvider>
-                <BrowserRouter>
-                  <App />
-                </BrowserRouter>
-              </FinanceProvider>
-            </SettingsProvider>
-          </SubscriptionProvider>
-        </AuthProvider>
+        <AdminAuthProvider>
+          <AuthProvider>
+            <SubscriptionProvider>
+              <SettingsProvider>
+                <FinanceProvider>
+                  <BrowserRouter>
+                    <App />
+                  </BrowserRouter>
+                </FinanceProvider>
+              </SettingsProvider>
+            </SubscriptionProvider>
+          </AuthProvider>
+        </AdminAuthProvider>
       </ToastProvider>
     </ThemeProvider>
   </React.StrictMode>

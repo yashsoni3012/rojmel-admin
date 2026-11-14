@@ -41,7 +41,7 @@ export default function Settings() {
             }}
           >
             <div className="flex items-center gap-2 mb-4">
-              <PersonOutlineRoundedIcon sx={{ color: '#3454D1', fontSize: 22 }} />
+              <PersonOutlineRoundedIcon sx={{ color: '#1761B6', fontSize: 22 }} />
               <Typography variant="h6" fontWeight={700}>
                 Account Profile
               </Typography>
@@ -50,12 +50,12 @@ export default function Settings() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 mb-5">
               <Avatar
                 sx={{
-                  bgcolor: '#3454D1',
+                  bgcolor: '#1761B6',
                   width: 56,
                   height: 56,
                   fontSize: '1.4rem',
                   fontWeight: 800,
-                  boxShadow: '0 4px 12px rgba(52,84,209,0.25)',
+                  boxShadow: '0 4px 12px rgba(23,97,182,0.25)',
                 }}
               >
                 {user?.name?.[0] || 'A'}
@@ -99,7 +99,7 @@ export default function Settings() {
                 <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
                   ACTIVE PLAN
                 </Typography>
-                <Typography variant="body2" fontWeight={800} sx={{ color: '#3454D1', mt: 0.5 }}>
+                <Typography variant="body2" fontWeight={800} sx={{ color: '#1761B6', mt: 0.5 }}>
                   {subscription?.name || 'Pro Ledger'}
                 </Typography>
               </div>
@@ -118,7 +118,7 @@ export default function Settings() {
             {/* Quick Subscription Manage Banner */}
             <div className="p-3.5 rounded-xl bg-gradient-to-r from-blue-50/80 to-indigo-50/50 border border-blue-100/90 flex items-center justify-between gap-3 flex-wrap">
               <div className="flex items-center gap-2.5 min-w-0">
-                <WorkspacePremiumRoundedIcon sx={{ color: '#3454D1', fontSize: 24 }} />
+                <WorkspacePremiumRoundedIcon sx={{ color: '#1761B6', fontSize: 24 }} />
                 <div>
                   <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#18233F' }}>
                     Current Plan: {subscription?.name || 'Pro Ledger'}
@@ -133,16 +133,18 @@ export default function Settings() {
               <Button
                 component={NavLink}
                 to="/subscription"
-                size="small"
                 variant="contained"
                 sx={{
-                  borderRadius: '9px',
+                  borderRadius: '12px',
                   fontWeight: 700,
-                  bgcolor: '#3454D1',
-                  px: 2,
-                  py: 0.8,
+                  bgcolor: '#1761B6',
+                  px: 2.5,
+                  py: 1.2,
+                  minHeight: 44,
+                  fontSize: '0.92rem',
                   textTransform: 'none',
-                  '&:hover': { bgcolor: '#2743B8' },
+                  boxShadow: 'none',
+                  '&:hover': { bgcolor: '#124E94', boxShadow: 'none' },
                 }}
               >
                 Change / Upgrade Plan →
@@ -161,7 +163,7 @@ export default function Settings() {
             }}
           >
             <div className="flex items-center gap-2 mb-4">
-              <InfoOutlinedIcon sx={{ color: '#3454D1', fontSize: 22 }} />
+              <InfoOutlinedIcon sx={{ color: '#1761B6', fontSize: 22 }} />
               <Typography variant="h6" fontWeight={700}>
                 Ledger Info
               </Typography>
@@ -178,7 +180,7 @@ export default function Settings() {
               </div>
               <div className="flex justify-between items-center pt-3">
                 <span className="text-slate-500 font-medium">Active Plan</span>
-                <span className="font-bold text-[#3454D1]">{subscription.name}</span>
+                <span className="font-bold text-[#1761B6]">{subscription.name}</span>
               </div>
               <div className="flex justify-between items-center pt-3">
                 <span className="text-slate-500 font-medium">Default Currency</span>
@@ -204,7 +206,7 @@ export default function Settings() {
           }}
         >
           <div className="flex items-center gap-2 mb-1">
-            <TuneRoundedIcon sx={{ color: '#3454D1', fontSize: 22 }} />
+            <TuneRoundedIcon sx={{ color: '#1761B6', fontSize: 22 }} />
             <Typography variant="h6" fontWeight={700}>
               Display & Table Preferences
             </Typography>

@@ -13,7 +13,7 @@ export default function PageHeader({
   onMonth,
   onAdd,
   addLabel = 'Add entry',
-  accent = '#3454D1',
+  accent = '#1761B6',
   title,
   subtitle,
 }) {
@@ -40,7 +40,7 @@ export default function PageHeader({
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start" sx={{ pl: 0.5, mr: 0.5 }}>
-                  <SearchRoundedIcon sx={{ color: '#3454D1', fontSize: 22 }} />
+                  <SearchRoundedIcon sx={{ color: '#1761B6', fontSize: 22 }} />
                 </InputAdornment>
               ),
               endAdornment: searchValue ? (
@@ -60,14 +60,15 @@ export default function PageHeader({
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: '12px',
+                minHeight: 46,
                 bgcolor: '#FFFFFF',
-                fontSize: '0.9rem',
+                fontSize: '0.92rem',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
                 '& fieldset': { borderColor: '#E2E8F0', transition: 'border-color 0.2s' },
                 '&:hover fieldset': { borderColor: '#94A3B8' },
                 '&.Mui-focused': {
-                  boxShadow: '0 0 0 3px rgba(52, 84, 209, 0.12)',
-                  '& fieldset': { borderColor: '#3454D1', borderWidth: '1.5px' },
+                  boxShadow: '0 0 0 3px rgba(23, 97, 182, 0.12)',
+                  '& fieldset': { borderColor: '#1761B6', borderWidth: '1.5px' },
                 },
               },
             }}
@@ -122,23 +123,45 @@ export default function PageHeader({
             onChange={(e) => onMonth(e.target.value)}
             sx={{
               background: '#FFFFFF',
-              borderRadius: 3,
-              minWidth: { xs: '100%', sm: 160 },
-              maxWidth: { xs: '100%', sm: 190 },
+              borderRadius: '12px',
+              minWidth: { xs: '100%', sm: 165 },
+              maxWidth: { xs: '100%', sm: 195 },
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '12px',
+                minHeight: 46,
+                fontSize: '0.92rem',
+                fontWeight: 600,
+                '& fieldset': { borderColor: '#E2E8F0' },
+                '&:hover fieldset': { borderColor: '#94A3B8' },
+                '&.Mui-focused fieldset': { borderColor: '#1761B6', borderWidth: '1.5px' },
+              },
             }}
           />
         )}
         {onAdd && (
           <Button
-            startIcon={<AddIcon />}
+            startIcon={<AddIcon sx={{ fontSize: 22 }} />}
             onClick={onAdd}
             sx={{
-              background: accent,
+              background: '#1761B6 !important',
+              bgcolor: '#1761B6 !important',
+              color: '#FFFFFF !important',
               whiteSpace: 'nowrap',
               width: { xs: '100%', sm: 'auto' },
-              py: 1,
-              px: 2.2,
-              '&:hover': { background: accent, filter: 'brightness(.92)' },
+              py: 1.35,
+              px: 3,
+              minHeight: 46,
+              fontSize: '0.96rem',
+              fontWeight: 700,
+              borderRadius: '12px',
+              boxShadow: 'none',
+              transition: 'all 0.18s ease-in-out',
+              '&:hover': {
+                background: '#124E94 !important',
+                bgcolor: '#124E94 !important',
+                boxShadow: 'none',
+                transform: 'translateY(-1px)',
+              },
             }}
           >
             {addLabel}

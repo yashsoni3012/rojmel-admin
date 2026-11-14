@@ -104,7 +104,7 @@ export default function EntryTable({ rows, onEdit, onDelete, amountColor, pagina
                   <TableCell align="right" sx={{ py: settings.compactRows ? 1.2 : 2, whiteSpace: 'nowrap' }}>
                     {onEdit && (
                       <Tooltip title="Edit entry">
-                        <IconButton size="small" onClick={() => onEdit(r)} sx={{ color: '#64748B', '&:hover': { color: '#3454D1', bgcolor: 'rgba(52,84,209,0.08)' } }}>
+                        <IconButton size="small" onClick={() => onEdit(r)} sx={{ color: '#64748B', '&:hover': { color: '#1761B6', bgcolor: 'rgba(23,97,182,0.08)' } }}>
                           <EditIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>

@@ -119,7 +119,7 @@ export default function Daily() {
         <StatCard
           label="Net balance"
           value={inr(netBalance)}
-          color={netBalance >= 0 ? '#3454D1' : '#E5484D'}
+          color={netBalance >= 0 ? '#1761B6' : '#E5484D'}
           icon={<span className="font-extrabold">±</span>}
         />
       </div>
@@ -157,7 +157,7 @@ export default function Daily() {
               }}
               startAdornment={
                 <InputAdornment position="start" sx={{ pl: 0.5, mr: 0.5 }}>
-                  <FilterListRoundedIcon sx={{ fontSize: 20, color: '#3454D1' }} />
+                  <FilterListRoundedIcon sx={{ fontSize: 20, color: '#1761B6' }} />
                 </InputAdornment>
               }
               sx={{
@@ -167,7 +167,7 @@ export default function Daily() {
                 fontSize: '0.88rem',
                 '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
                 '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94A3B8' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#3454D1' },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#1761B6' },
               }}
             >
               <MenuItem value="all" sx={{ fontSize: '0.88rem', fontWeight: 500 }}>
@@ -198,8 +198,8 @@ export default function Daily() {
               label={`Search: "${search}"`}
               onDelete={() => setSearch('')}
               sx={{
-                bgcolor: 'rgba(52, 84, 209, 0.08)',
-                color: '#3454D1',
+                bgcolor: 'rgba(23, 97, 182, 0.08)',
+                color: '#1761B6',
                 fontWeight: 600,
                 fontSize: '0.78rem',
               }}
@@ -299,7 +299,7 @@ export default function Daily() {
                     sx={{
                       py: settings.compactRows ? 1.2 : 2,
                       fontWeight: 800,
-                      color: d.dayNet >= 0 ? '#3454D1' : '#E5484D',
+                      color: d.dayNet >= 0 ? '#1761B6' : '#E5484D',
                     }}
                   >
                     {inr(d.dayNet)}

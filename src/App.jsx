@@ -1,11 +1,11 @@
 import { lazy, Suspense } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import ProtectedRoute from './routes/ProtectedRoute.jsx';
 import Layout from './components/common/Layout.jsx';
 import PageSkeleton from './components/common/PageSkeleton.jsx';
 import { CATEGORIES } from './utils.js';
 
-// Lazy-loaded page modules for code splitting and fast initial page load
+// Lazy-loaded normal app page modules
 const Login = lazy(() => import('./pages/Login.jsx'));
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
 const Daily = lazy(() => import('./pages/Daily.jsx'));
@@ -14,10 +14,17 @@ const Settings = lazy(() => import('./pages/Settings.jsx'));
 const Subscription = lazy(() => import('./pages/Subscription.jsx'));
 const NotFound = lazy(() => import('./pages/NotFound.jsx'));
 
+// Lazy-loaded Super Admin modules
+import AdminProtectedRoute from './admin/routes/AdminProtectedRoute.jsx';
+import AdminLayout from './admin/components/AdminLayout.jsx';
+const AdminLogin = lazy(() => import('./admin/pages/AdminLogin.jsx'));
+const AdminDashboard = lazy(() => import('./admin/pages/AdminDashboard.jsx'));
+
 export default function App() {
   return (
     <Suspense fallback={<PageSkeleton />}>
       <Routes>
+        {/* Normal Rojmel App Routes */}
         <Route path="/login" element={<Login />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
@@ -76,6 +83,23 @@ export default function App() {
             <Route path="settings" element={<Settings />} />
           </Route>
         </Route>
+
+        {/* Super Admin Panel Routes (/admin) */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin" element={<AdminProtectedRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="users" element={<AdminDashboard />} />
+            <Route path="subscriptions" element={<AdminDashboard />} />
+            <Route path="transactions" element={<AdminDashboard />} />
+            <Route path="plans" element={<AdminDashboard />} />
+            <Route path="reports" element={<AdminDashboard />} />
+            <Route path="settings" element={<AdminDashboard />} />
+            <Route path="*" element={<Navigate to="/admin" replace />} />
+          </Route>
+        </Route>
+
+        {/* Catch-all */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>

@@ -2,27 +2,24 @@ import { useState, Suspense } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import PageSkeleton from './PageSkeleton.jsx';
 import {
-  AppBar,
   Avatar,
-  BottomNavigation,
-  BottomNavigationAction,
   Box,
   Chip,
   Divider,
   Drawer,
   IconButton,
   List,
+  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   Menu,
   MenuItem,
-  Paper,
-  Toolbar,
+  Tooltip,
   Typography,
+  useMediaQuery,
 } from '@mui/material';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import DashboardIcon from '@mui/icons-material/SpaceDashboardRounded';
 import CalendarIcon from '@mui/icons-material/CalendarMonthRounded';
 import IncomeIcon from '@mui/icons-material/AccountBalanceWalletRounded';
@@ -32,143 +29,37 @@ import SavingsIcon from '@mui/icons-material/SavingsRounded';
 import SettingsIcon from '@mui/icons-material/SettingsRounded';
 import LogoutIcon from '@mui/icons-material/LogoutRounded';
 import WorkspacePremiumRoundedIcon from '@mui/icons-material/WorkspacePremiumRounded';
+import CircleRoundedIcon from '@mui/icons-material/CircleRounded';
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ConfirmDialog from './ConfirmDialog.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useSubscription } from '../../context/SubscriptionContext.jsx';
-import { env } from '../../config/env.js';
+
+// Uniform dimensions matching Super Admin Panel
+const SIDEBAR_WIDTH = 270;
+const GAP = 12; // Uniform 12px grid boundary spacing
 
 const NAV = [
-  { to: '/', label: 'Dashboard', icon: <DashboardIcon /> },
-  { to: '/daily', label: 'Day by day', icon: <CalendarIcon /> },
-  { to: '/income', label: 'Income', icon: <IncomeIcon /> },
-  { to: '/expenses', label: 'Expenses', icon: <ExpenseIcon /> },
-  { to: '/petrol', label: 'Petrol', icon: <PetrolIcon /> },
-  { to: '/savings', label: 'Savings', icon: <SavingsIcon /> },
-  { to: '/subscription', label: 'Subscription', icon: <WorkspacePremiumRoundedIcon /> },
-  { to: '/settings', label: 'Settings', icon: <SettingsIcon /> },
+  { to: '/', label: 'Dashboard', icon: DashboardIcon },
+  { to: '/daily', label: 'Day by day', icon: CalendarIcon },
+  { to: '/income', label: 'Income', icon: IncomeIcon },
+  { to: '/expenses', label: 'Expenses', icon: ExpenseIcon },
+  { to: '/petrol', label: 'Petrol', icon: PetrolIcon },
+  { to: '/savings', label: 'Savings', icon: SavingsIcon },
+  { to: '/subscription', label: 'Subscription', icon: WorkspacePremiumRoundedIcon },
+  { to: '/settings', label: 'Settings', icon: SettingsIcon },
 ];
-
-const itemSx = {
-  borderRadius: '12px',
-  color: '#C3CFEC',
-  py: 1.1,
-  px: 2,
-  mb: 0.5,
-  '& .MuiListItemIcon-root': { color: 'inherit', minWidth: 38 },
-  '&:hover': { background: 'rgba(255,255,255,.08)', color: '#FFFFFF' },
-  '&.active': { background: '#3454D1', color: '#FFFFFF', fontWeight: 700 },
-};
-
-function Sidebar({ onNavigate, onLogout, onClose, isDrawer }) {
-  const { user } = useAuth();
-  const { subscription } = useSubscription();
-
-  return (
-    <div className="h-full flex flex-col bg-[#18233F] text-white">
-      {/* Brand Header */}
-      <div className="px-5 pt-5 pb-4 flex items-center justify-between border-b border-white/10">
-        <div>
-          <Typography variant="h5" fontWeight={800} sx={{ letterSpacing: '-0.02em', color: '#FFFFFF' }}>
-            {env.appName}
-          </Typography>
-          <Typography variant="caption" sx={{ color: '#9FB0D9', display: 'block', mt: 0.2 }}>
-            Your daily money ledger
-          </Typography>
-        </div>
-        {isDrawer && (
-          <IconButton
-            onClick={onClose}
-            sx={{
-              color: '#9FB0D9',
-              p: 1,
-              '&:hover': { color: '#FFFFFF', bgcolor: 'rgba(255,255,255,0.08)' },
-            }}
-            aria-label="close sidebar"
-          >
-            <CloseRoundedIcon />
-          </IconButton>
-        )}
-      </div>
-
-      {/* User profile on drawer */}
-      {isDrawer && user && (
-        <div className="mx-4 mt-4 p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
-          <Avatar sx={{ bgcolor: '#3454D1', width: 40, height: 40, fontWeight: 700 }}>
-            {user?.name?.[0]?.toUpperCase() || 'U'}
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <Typography variant="body2" fontWeight={700} noWrap sx={{ color: '#FFFFFF' }}>
-              {user.name}
-            </Typography>
-            <Typography variant="caption" noWrap sx={{ color: '#9FB0D9', display: 'block' }}>
-              {user.email}
-            </Typography>
-            <div className="mt-1 flex items-center gap-1.5">
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                {subscription.name}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Navigation List */}
-      <List className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {NAV.map((n) => (
-          <ListItemButton
-            key={n.to}
-            component={NavLink}
-            to={n.to}
-            end={n.to === '/'}
-            onClick={onNavigate}
-            sx={itemSx}
-          >
-            <ListItemIcon sx={{ minWidth: 38, color: 'inherit' }}>{n.icon}</ListItemIcon>
-            <ListItemText
-              primary={n.label}
-              primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 600 }}
-            />
-          </ListItemButton>
-        ))}
-      </List>
-
-      {/* Logout button at bottom */}
-      <div className="mt-auto p-3 border-t border-white/10">
-        <ListItemButton
-          onClick={onLogout}
-          sx={{
-            borderRadius: '10px',
-            color: '#9FB0D9',
-            py: 1,
-            px: 1.5,
-            transition: 'all 0.15s ease',
-            '& .MuiListItemIcon-root': { color: 'inherit', minWidth: 32 },
-            '&:hover': {
-              background: 'rgba(239, 68, 68, 0.14)',
-              color: '#F87171',
-              '& .MuiListItemIcon-root': { color: '#F87171' },
-            },
-          }}
-        >
-          <ListItemIcon sx={{ minWidth: 32 }}>
-            <LogoutIcon sx={{ fontSize: 20 }} />
-          </ListItemIcon>
-          <ListItemText primary="Log out" primaryTypographyProps={{ fontSize: '0.88rem', fontWeight: 600 }} />
-        </ListItemButton>
-      </div>
-    </div>
-  );
-}
 
 export default function Layout() {
   const { user, logout } = useAuth();
   const { subscription } = useSubscription();
   const location = useLocation();
   const navigate = useNavigate();
+  const isMobile = useMediaQuery('(max-width:899px)');
   const [drawer, setDrawer] = useState(false);
   const [anchor, setAnchor] = useState(null);
   const [confirm, setConfirm] = useState(false);
-  const paper = { width: 256, border: 0, background: '#18233F' };
 
   const askLogout = () => {
     setAnchor(null);
@@ -176,347 +67,554 @@ export default function Layout() {
     setConfirm(true);
   };
 
+  const handleMenuClick = (to) => {
+    navigate(to);
+    if (isMobile) setDrawer(false);
+  };
+
+  // Find current active page metadata for Topbar
   const currentNav = NAV.find((n) => (n.to === '/' ? location.pathname === '/' : location.pathname.startsWith(n.to))) || {
     to: location.pathname,
     label: 'Dashboard',
-    icon: <DashboardIcon />,
+    icon: DashboardIcon,
   };
+  const CurrentIcon = currentNav.icon;
 
-  // Determine active item in mobile bottom navigation
-  const getBottomNavValue = () => {
-    if (drawer) return 'menu';
-    if (location.pathname === '/daily') return '/daily';
-    if (location.pathname === '/income') return '/income';
-    if (location.pathname === '/expenses') return '/expenses';
-    return false;
-  };
+  // 4 Mobile & Tablet Stylish Navigation Items: Day by day, Invest, Expense, Menu (opens sidebar)
+  const mobileNavItems = [
+    {
+      label: 'Day by day',
+      icon: CalendarIcon,
+      isActive: location.pathname.startsWith('/daily'),
+      onClick: () => handleMenuClick('/daily'),
+    },
+    {
+      label: 'Invest',
+      icon: TrendingUpRoundedIcon,
+      isActive: location.pathname.startsWith('/savings'),
+      onClick: () => handleMenuClick('/savings'),
+    },
+    {
+      label: 'Expense',
+      icon: ExpenseIcon,
+      isActive: location.pathname.startsWith('/expenses'),
+      onClick: () => handleMenuClick('/expenses'),
+    },
+    {
+      label: drawer ? 'Close' : 'Menu',
+      icon: drawer ? CloseRoundedIcon : MenuRoundedIcon,
+      isActive: drawer,
+      onClick: () => setDrawer((prev) => !prev),
+    },
+  ];
 
-  const handleBottomNavChange = (event, newValue) => {
-    if (newValue === 'menu') {
-      setDrawer(true);
-    } else if (newValue) {
-      setDrawer(false);
-      navigate(newValue);
-    }
-  };
+  // Sidebar with requested color #C8D9ED and active tabs #1761B6
+  const sidebarContent = (
+    <Box
+      sx={{
+        width: '100%',
+        height: '100%',
+        bgcolor: '#C8D9ED', // Requested sidebar color: #C8D9ED
+        borderRadius: '22px',
+        border: '1px solid #B0C4DD',
+        px: 2.2,
+        py: 2.6,
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: 'none', // Without any shadow
+        color: '#18233F',
+        overflowY: 'auto',
+      }}
+    >
+      {/* Brand Logo Header - ONLY the uploaded Logo, no extra text */}
+      <Box
+        sx={{
+          mb: 3,
+          pt: 0.5,
+          px: 0.5,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+        }}
+        onClick={() => handleMenuClick('/')}
+      >
+        <Box
+          component="img"
+          src="/rojmel-full-logo.png"
+          alt="Rojmel"
+          onError={(e) => {
+            e.currentTarget.src = '/rojmel-logo.jpg';
+          }}
+          sx={{
+            width: '100%',
+            maxWidth: 220,
+            maxHeight: 64,
+            objectFit: 'contain',
+          }}
+        />
+      </Box>
+
+      {/* Navigation Menu List */}
+      <List sx={{ p: 0, display: 'flex', flexDirection: 'column', gap: 0.8, flex: 1 }}>
+        {NAV.map((n) => {
+          const Icon = n.icon;
+          const isActive = n.to === '/' ? location.pathname === '/' : location.pathname.startsWith(n.to);
+
+          return (
+            <ListItem key={n.to} disablePadding>
+              <ListItemButton
+                onClick={() => handleMenuClick(n.to)}
+                sx={{
+                  borderRadius: '14px',
+                  py: 1.25,
+                  px: 1.8,
+                  minHeight: 46,
+                  // Active item: solid requested color #1761B6, zero shadow
+                  bgcolor: isActive ? '#1761B6' : 'transparent',
+                  color: isActive ? '#FFFFFF' : '#18233F',
+                  boxShadow: 'none',
+                  transition: 'all 0.18s ease-in-out',
+                  '&:hover': {
+                    bgcolor: isActive ? '#1761B6' : 'rgba(23, 97, 182, 0.08)',
+                    boxShadow: 'none',
+                    transform: 'translateX(2px)',
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 40,
+                    color: isActive ? '#FFFFFF' : '#475E7B',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Icon sx={{ fontSize: 24 }} />
+                </ListItemIcon>
+                <ListItemText
+                  primary={n.label}
+                  primaryTypographyProps={{
+                    fontSize: '1.02rem',
+                    fontWeight: isActive ? 700 : 500,
+                    color: isActive ? '#FFFFFF' : '#18233F',
+                    letterSpacing: '0.01em',
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
+
+        {/* Logout Menu Button */}
+        <ListItem disablePadding sx={{ mt: 'auto', pt: 1 }}>
+          <ListItemButton
+            onClick={askLogout}
+            sx={{
+              borderRadius: '14px',
+              py: 1.25,
+              px: 1.8,
+              minHeight: 46,
+              color: '#18233F',
+              transition: 'all 0.18s ease-in-out',
+              '&:hover': {
+                bgcolor: 'rgba(239, 68, 68, 0.1)',
+                color: '#EF4444',
+                '& .MuiListItemIcon-root': { color: '#EF4444' },
+                transform: 'translateX(2px)',
+              },
+            }}
+          >
+            <ListItemIcon
+              sx={{
+                minWidth: 40,
+                color: '#475E7B',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <LogoutIcon sx={{ fontSize: 24 }} />
+            </ListItemIcon>
+            <ListItemText
+              primary="Logout"
+              primaryTypographyProps={{
+                fontSize: '1.02rem',
+                fontWeight: 600,
+                letterSpacing: '0.01em',
+              }}
+            />
+          </ListItemButton>
+        </ListItem>
+      </List>
+    </Box>
+  );
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#F4F6FB' }}>
-      {/* Desktop Permanent Drawer (>= 1024px / lg) */}
-      <Drawer
-        variant="permanent"
-        open
+    <Box sx={{ minHeight: '100vh', display: 'flex', bgcolor: '#F4F7F8' }}>
+      {/* Desktop Floating Sidebar (Exact 12px boundary spacing) */}
+      <Box
+        component="nav"
         sx={{
-          display: { xs: 'none', lg: 'block' },
-          '& .MuiDrawer-paper': paper,
+          display: { xs: 'none', md: 'block' },
+          width: SIDEBAR_WIDTH,
+          flexShrink: 0,
+          position: 'fixed',
+          top: `${GAP}px`,
+          bottom: `${GAP}px`,
+          left: `${GAP}px`,
+          height: `calc(100vh - ${GAP * 2}px)`,
+          zIndex: 1200,
         }}
       >
-        <Sidebar onLogout={askLogout} />
-      </Drawer>
+        {sidebarContent}
+      </Box>
 
-      {/* Mobile & Tablet Temporary Drawer (< 1024px / < lg) */}
+      {/* Mobile Slide-out Drawer */}
       <Drawer
         variant="temporary"
         open={drawer}
         onClose={() => setDrawer(false)}
         ModalProps={{ keepMounted: true }}
         sx={{
-          display: { xs: 'block', lg: 'none' },
-          '& .MuiDrawer-paper': paper,
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': {
+            width: SIDEBAR_WIDTH + 24,
+            p: 1.5,
+            pb: '90px',
+            bgcolor: 'transparent',
+            border: 'none',
+            boxShadow: 'none',
+          },
         }}
       >
-        <Sidebar
-          onNavigate={() => setDrawer(false)}
-          onClose={() => setDrawer(false)}
-          onLogout={askLogout}
-          isDrawer
-        />
+        {sidebarContent}
       </Drawer>
 
-      {/* Main Content Area: Responsive margin-left matching the drawer breakpoint exactly */}
+      {/* Main Content Area */}
       <Box
+        component="main"
         sx={{
-          ml: { xs: 0, lg: '256px' },
-          flex: 1,
+          flexGrow: 1,
+          // Offset matching Super Admin layout: sidebar width (270px) + left (12px) + gap (12px) = 294px
+          ml: { xs: 0, md: `${SIDEBAR_WIDTH + GAP * 2}px` },
+          minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
+          bgcolor: '#F4F7F8',
+          pr: { xs: 1.5, sm: 2, md: `${GAP}px` },
+          pb: { xs: '100px', md: 2.5 },
           minWidth: 0,
-          width: { xs: '100%', lg: 'calc(100% - 256px)' },
         }}
       >
-        {/* Top Navigation Bar / AppBar */}
-        <AppBar
-          position="sticky"
-          elevation={0}
+        {/* Sticky Topbar Container */}
+        <Box
           sx={{
-            bgcolor: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-            borderBottom: '1px solid #E2E8F0',
-            color: '#18233F',
-            zIndex: (theme) => theme.zIndex.drawer - 1,
+            position: 'sticky',
+            top: 0,
+            zIndex: 1100,
+            bgcolor: '#F4F7F8',
+            pt: `${GAP}px`,
+            pb: 1.5,
           }}
         >
-          <Toolbar sx={{ minHeight: { xs: 58, sm: 64 }, px: { xs: 2, sm: 3, lg: 4 }, justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
-              {/* Sidebar Hamburger Toggle on Mobile & Tablet (< 1024px) */}
-              <IconButton
-                edge="start"
-                onClick={() => setDrawer(true)}
-                sx={{
-                  display: { xs: 'inline-flex', lg: 'none' },
-                  color: '#18233F',
-                  bgcolor: 'rgba(0,0,0,0.03)',
-                  '&:hover': { bgcolor: 'rgba(0,0,0,0.06)' },
-                  p: 1,
-                  mr: 0.5,
-                }}
-                aria-label="open menu"
-              >
-                <MenuRoundedIcon />
-              </IconButton>
+          {/* Floating Topbar Card matching requested color: #C8D9ED */}
+          <Box
+            sx={{
+              mx: { xs: 1.5, md: 0 },
+              minHeight: 74,
+              bgcolor: '#C8D9ED', // Requested topbar color: same as sidebar #C8D9ED
+              borderRadius: '18px',
+              border: '1px solid #B0C4DD',
+              boxShadow: '0 4px 20px rgba(23, 97, 182, 0.08)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: { xs: 2, sm: 3 },
+              py: 1.2,
+            }}
+          >
+          {/* Left Title & Mobile Hamburger Button */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.8 }}>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={() => setDrawer(true)}
+              sx={{
+                display: { md: 'none' },
+                bgcolor: '#FFFFFF',
+                color: '#18233F',
+                p: 1,
+                borderRadius: '12px',
+                border: '1px solid #B0C4DD',
+              }}
+            >
+              <MenuRoundedIcon sx={{ fontSize: 22 }} />
+            </IconButton>
 
-              {/* Current Page Indicator */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#3454D1',
-                    bgcolor: 'rgba(52, 84, 209, 0.08)',
-                    p: 0.8,
-                    borderRadius: '10px',
-                    '& .MuiSvgIcon-root': { fontSize: { xs: 20, sm: 22 } },
-                  }}
-                >
-                  {currentNav.icon}
-                </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box
+                sx={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: '10px',
+                  bgcolor: '#FFFFFF',
+                  border: '1px solid #B0C4DD',
+                  display: { xs: 'none', sm: 'flex' },
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#1761B6',
+                }}
+              >
+                <CurrentIcon sx={{ fontSize: 22 }} />
+              </Box>
+
+              <Box>
                 <Typography
-                  variant="h6"
-                  fontWeight={700}
-                  noWrap
+                  variant="h5"
+                  fontWeight={800}
                   sx={{
                     color: '#18233F',
-                    letterSpacing: '-0.01em',
-                    fontSize: { xs: '1.05rem', sm: '1.2rem', md: '1.25rem' },
+                    fontSize: { xs: '1.15rem', sm: '1.28rem' },
+                    lineHeight: 1.2,
                   }}
                 >
                   {currentNav.label}
                 </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: '#475E7B',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    display: { xs: 'none', sm: 'block' },
+                    mt: 0.2,
+                  }}
+                >
+                  Your daily money ledger
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Right Status / Subscription & User Profile */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.8 }}>
+            {/* Subscription Pill */}
+            <Chip
+              component={NavLink}
+              to="/subscription"
+              clickable
+              icon={<CircleRoundedIcon sx={{ fontSize: '10px !important', color: '#1761B6 !important' }} />}
+              label={subscription?.name || 'Pro Ledger'}
+              size="medium"
+              sx={{
+                display: { xs: 'none', sm: 'inline-flex' },
+                bgcolor: '#FFFFFF',
+                color: '#1761B6',
+                border: '1px solid #B0C4DD',
+                fontWeight: 700,
+                fontSize: '0.8rem',
+                py: 2,
+                px: 1,
+                borderRadius: '12px',
+                cursor: 'pointer',
+              }}
+            />
+
+            {/* User Profile Pill */}
+            <Box
+              onClick={(e) => setAnchor(e.currentTarget)}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.2,
+                bgcolor: '#FFFFFF',
+                border: '1px solid #B0C4DD',
+                py: 0.6,
+                px: 1.2,
+                borderRadius: '12px',
+                cursor: 'pointer',
+                transition: 'all 0.18s ease',
+                '&:hover': { bgcolor: '#F4F7FA' },
+              }}
+            >
+              <Avatar
+                sx={{
+                  width: 36,
+                  height: 36,
+                  bgcolor: '#1761B6',
+                  color: '#FFFFFF',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  border: '2px solid #1761B6',
+                }}
+              >
+                {user?.name?.[0]?.toUpperCase() || 'U'}
+              </Avatar>
+              <Box sx={{ display: { xs: 'none', lg: 'block' }, pr: 0.5 }}>
+                <Typography variant="body2" fontWeight={700} sx={{ color: '#18233F', lineHeight: 1.1, fontSize: '0.84rem' }}>
+                  {user?.name || 'User'}
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#475E7B', fontSize: '0.72rem', lineHeight: 1, fontWeight: 600 }}>
+                  {user?.email || 'Ledger Account'}
+                </Typography>
               </Box>
             </Box>
 
-            {/* Right User Actions */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, flexShrink: 0 }}>
-              <Box sx={{ display: { xs: 'none', sm: 'block' }, textAlign: 'right', lineHeight: 1.2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
-                  <Typography variant="body2" fontWeight={700} sx={{ color: '#18233F' }}>
-                    {user?.name}
-                  </Typography>
-                  <Chip
-                    component={NavLink}
-                    to="/subscription"
-                    size="small"
-                    label={subscription?.name || 'Pro Ledger'}
-                    clickable
-                    sx={{
-                      bgcolor: '#FEF3C7',
-                      color: '#B45309',
-                      fontWeight: 800,
-                      height: 20,
-                      fontSize: '0.68rem',
-                      cursor: 'pointer',
-                    }}
-                  />
-                </Box>
-                <Typography variant="caption" sx={{ color: '#6B7592' }}>
+            {/* Profile Dropdown Menu */}
+            <Menu
+              anchorEl={anchor}
+              open={!!anchor}
+              onClose={() => setAnchor(null)}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              PaperProps={{
+                elevation: 3,
+                sx: {
+                  mt: 1.2,
+                  borderRadius: '14px',
+                  minWidth: 220,
+                  border: '1px solid #C4D8CE',
+                  p: 0.5,
+                },
+              }}
+            >
+              <Box sx={{ px: 2, py: 1.5 }}>
+                <Typography variant="subtitle2" fontWeight={700} noWrap sx={{ color: '#142B38' }}>
+                  {user?.name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" noWrap display="block">
                   {user?.email}
                 </Typography>
               </Box>
-              <IconButton
-                onClick={(e) => setAnchor(e.currentTarget)}
-                size="small"
-                sx={{
-                  p: 0.5,
-                  border: '2px solid transparent',
-                  '&:hover': { borderColor: '#3454D1' },
-                }}
+              <Divider sx={{ my: 0.5 }} />
+              <MenuItem
+                component={NavLink}
+                to="/subscription"
+                onClick={() => setAnchor(null)}
+                sx={{ py: 1, fontWeight: 600, gap: 1.5, borderRadius: '8px' }}
               >
-                <Avatar
-                  sx={{
-                    bgcolor: '#3454D1',
-                    width: 36,
-                    height: 36,
-                    fontWeight: 700,
-                    fontSize: '0.95rem',
-                  }}
-                >
-                  {user?.name?.[0]?.toUpperCase() || 'U'}
-                </Avatar>
-              </IconButton>
-
-              <Menu
-                anchorEl={anchor}
-                open={!!anchor}
-                onClose={() => setAnchor(null)}
-                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                PaperProps={{
-                  elevation: 4,
-                  sx: {
-                    mt: 1,
-                    borderRadius: 2,
-                    minWidth: 210,
-                    border: '1px solid #E2E8F0',
-                  },
-                }}
+                <WorkspacePremiumRoundedIcon sx={{ fontSize: 20, color: '#10A878' }} />
+                Subscription Plans
+              </MenuItem>
+              <MenuItem
+                component={NavLink}
+                to="/settings"
+                onClick={() => setAnchor(null)}
+                sx={{ py: 1, fontWeight: 600, gap: 1.5, borderRadius: '8px' }}
               >
-                <Box sx={{ px: 2, py: 1.5 }}>
-                  <Typography variant="subtitle2" fontWeight={700} noWrap>
-                    {user?.name}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" noWrap display="block">
-                    {user?.email}
-                  </Typography>
-                  <Box sx={{ mt: 0.8, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Chip
-                      size="small"
-                      label={`Plan: ${subscription?.name || 'Pro Ledger'}`}
-                      sx={{
-                        bgcolor: 'rgba(52, 84, 209, 0.1)',
-                        color: '#3454D1',
-                        fontWeight: 700,
-                        height: 22,
-                        fontSize: '0.72rem',
-                      }}
-                    />
-                  </Box>
-                  <Divider sx={{ my: 1 }} />
-                </Box>
-                <MenuItem
-                  component={NavLink}
-                  to="/subscription"
-                  onClick={() => setAnchor(null)}
-                  sx={{ py: 1, fontWeight: 600, gap: 1.5 }}
-                >
-                  <WorkspacePremiumRoundedIcon sx={{ fontSize: 20, color: '#B45309' }} />
-                  Subscription Plans
-                </MenuItem>
-                <MenuItem
-                  component={NavLink}
-                  to="/settings"
-                  onClick={() => setAnchor(null)}
-                  sx={{ py: 1, fontWeight: 600, gap: 1.5 }}
-                >
-                  <SettingsIcon sx={{ fontSize: 20, color: '#6B7592' }} />
-                  Settings
-                </MenuItem>
-                <Divider />
-                <MenuItem
-                  onClick={askLogout}
-                  sx={{ py: 1, fontWeight: 600, color: 'error.main', gap: 1.5 }}
-                >
-                  <LogoutIcon sx={{ fontSize: 20 }} />
-                  Log out
-                </MenuItem>
-              </Menu>
-            </Box>
-          </Toolbar>
-        </AppBar>
+                <SettingsIcon sx={{ fontSize: 20, color: '#71838C' }} />
+                Settings
+              </MenuItem>
+              <Divider sx={{ my: 0.5 }} />
+              <MenuItem
+                onClick={askLogout}
+                sx={{ py: 1, fontWeight: 600, color: '#EF4444', gap: 1.5, borderRadius: '8px' }}
+              >
+                <LogoutIcon sx={{ fontSize: 20 }} />
+                Log out
+              </MenuItem>
+            </Menu>
+          </Box>
+        </Box>
+      </Box>
 
-        {/* Page Content: pb-24 on mobile/tablet ensures bottom bar does not overlap content */}
-        <Box
-          component="main"
-          sx={{
-            flex: 1,
-            width: '100%',
-            p: { xs: 2, sm: 3, lg: 4 },
-            pb: { xs: 12, lg: 4 },
-            maxWidth: '1600px',
-            mx: 'auto',
-          }}
-        >
+      {/* Rojmel Page Content (kept 100% as is inside Outlet) */}
+        <Box sx={{ px: { xs: 1.5, md: 0 }, flex: 1, width: '100%', maxWidth: '1600px', mx: 'auto' }}>
           <Suspense fallback={<PageSkeleton />}>
             <Outlet />
           </Suspense>
         </Box>
       </Box>
 
-      {/* Mobile & Tablet Bottom Navigation Bar (Material UI) */}
-      <Paper
-        elevation={8}
+      {/* Mobile & Tablet Stylish Bottom Navigation Dock */}
+      <Box
+        component="nav"
+        aria-label="Mobile Bottom Navigation"
         sx={{
-          display: { xs: 'block', lg: 'none' },
+          display: { xs: 'flex', md: 'none' },
           position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: (theme) => theme.zIndex.appBar,
-          borderTop: '1px solid #E2E8F0',
-          bgcolor: '#FFFFFF',
-          pb: 'env(safe-area-inset-bottom, 0px)',
+          bottom: { xs: 10, sm: 14 },
+          left: { xs: 12, sm: 24 },
+          right: { xs: 12, sm: 24 },
+          maxWidth: 500,
+          mx: 'auto',
+          height: 68,
+          bgcolor: 'rgba(255, 255, 255, 0.96)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '24px',
+          border: '1.5px solid #C8D9ED',
+          boxShadow: '0 12px 36px -4px rgba(23, 97, 182, 0.22), 0 4px 16px rgba(0, 0, 0, 0.06)',
+          zIndex: 1400,
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          px: 1,
         }}
       >
-        <BottomNavigation
-          showLabels
-          value={getBottomNavValue()}
-          onChange={handleBottomNavChange}
-          sx={{
-            height: 62,
-            bgcolor: '#FFFFFF',
-            maxWidth: '600px',
-            mx: 'auto',
-            '& .MuiBottomNavigationAction-root': {
-              color: '#64748B',
-              minWidth: 0,
-              py: 0.75,
-              px: 1,
-              transition: 'all 0.15s ease-in-out',
-              '&.Mui-selected': {
-                color: '#3454D1',
-                '& .MuiBottomNavigationAction-label': {
-                  fontWeight: 700,
-                  fontSize: '0.74rem',
+        {mobileNavItems.map((item) => {
+          const Icon = item.icon;
+          const active = item.isActive;
+          return (
+            <Box
+              key={item.label}
+              component="button"
+              type="button"
+              onClick={item.onClick}
+              sx={{
+                flex: 1,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 0.4,
+                bgcolor: 'transparent',
+                border: 'none',
+                outline: 'none',
+                cursor: 'pointer',
+                p: 0,
+                transition: 'all 0.18s ease-in-out',
+                '&:active': {
+                  transform: 'scale(0.92)',
                 },
-                '& .MuiSvgIcon-root': {
-                  transform: 'scale(1.1)',
-                },
-              },
-              '& .MuiBottomNavigationAction-label': {
-                fontWeight: 600,
-                fontSize: '0.71rem',
-                mt: 0.4,
-                letterSpacing: '-0.01em',
-              },
-              '& .MuiSvgIcon-root': {
-                fontSize: 23,
-                transition: 'transform 0.15s ease',
-              },
-            },
-          }}
-        >
-          <BottomNavigationAction
-            label="Day by Day"
-            value="/daily"
-            icon={<CalendarIcon />}
-          />
-          <BottomNavigationAction
-            label="Income"
-            value="/income"
-            icon={<IncomeIcon />}
-          />
-          <BottomNavigationAction
-            label="Expense"
-            value="/expenses"
-            icon={<ExpenseIcon />}
-          />
-          <BottomNavigationAction
-            label="Menu"
-            value="menu"
-            icon={<MenuRoundedIcon />}
-          />
-        </BottomNavigation>
-      </Paper>
+              }}
+            >
+              {/* Active Pill Indicator */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: active ? 48 : 34,
+                  height: 30,
+                  borderRadius: '15px',
+                  bgcolor: active ? '#1761B6' : 'transparent',
+                  color: active ? '#FFFFFF' : '#64748B',
+                  transition: 'all 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: active ? '0 4px 12px rgba(23, 97, 182, 0.35)' : 'none',
+                }}
+              >
+                <Icon sx={{ fontSize: 20 }} />
+              </Box>
+
+              {/* Label */}
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: '0.72rem',
+                  fontWeight: active ? 800 : 600,
+                  color: active ? '#1761B6' : '#64748B',
+                  letterSpacing: active ? '-0.01em' : 'normal',
+                  lineHeight: 1,
+                  transition: 'color 0.2s ease',
+                }}
+              >
+                {item.label}
+              </Typography>
+            </Box>
+          );
+        })}
+      </Box>
 
       {/* Logout Confirmation Dialog */}
       <ConfirmDialog

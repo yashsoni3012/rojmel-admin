@@ -39,7 +39,7 @@ export const SUBSCRIPTION_PLANS = [
       'Priority 24/7 customer support',
     ],
     popular: true,
-    color: '#3454D1',
+    color: '#1761B6',
   },
   {
     id: 'business',
