@@ -75,6 +75,7 @@ export default function Settings() {
   const [fetchingProfile, setFetchingProfile] = useState(true);
 
   // Change Password Form State
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
     newPassword: '',
@@ -251,6 +252,7 @@ export default function Settings() {
         newPassword: '',
         confirmPassword: '',
       });
+      setIsChangingPassword(false);
     } catch (err) {
       toast.error(err.message || 'Failed to change password');
     } finally {
@@ -881,193 +883,284 @@ export default function Settings() {
                 boxShadow: '0 2px 12px rgba(24, 35, 63, 0.04)',
               }}
             >
-              <div className="flex items-center gap-2.5 mb-1">
-                <LockResetRoundedIcon sx={{ color: '#1761B6', fontSize: 24 }} />
-                <div>
-                  <Typography variant="h6" fontWeight={800} sx={{ color: '#18233F' }}>
-                    Security & Change Password
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: '#64748B' }}>
-                    Ensure your account is using a strong password (minimum 8 characters)
-                  </Typography>
+              <div className="flex items-center justify-between flex-wrap gap-3 mb-1">
+                <div className="flex items-center gap-2.5">
+                  <LockResetRoundedIcon sx={{ color: '#1761B6', fontSize: 26 }} />
+                  <div>
+                    <Typography variant="h6" fontWeight={800} sx={{ color: '#18233F' }}>
+                      Security & Change Password
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#64748B' }}>
+                      Ensure your account is using a strong password (minimum 8 characters)
+                    </Typography>
+                  </div>
                 </div>
+
+                {!isChangingPassword ? (
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      setIsChangingPassword(true);
+                      setPasswordErrors({});
+                    }}
+                    startIcon={<LockResetRoundedIcon sx={{ fontSize: 18 }} />}
+                    sx={{
+                      borderRadius: '12px',
+                      py: 1,
+                      px: 2.5,
+                      minHeight: 40,
+                      fontWeight: 700,
+                      fontSize: '0.9rem',
+                      textTransform: 'none',
+                      bgcolor: '#1761B6 !important',
+                      background: '#1761B6 !important',
+                      color: '#FFFFFF !important',
+                      boxShadow: '0 2px 8px rgba(23, 97, 182, 0.25)',
+                      '&:hover': {
+                        bgcolor: '#124E94 !important',
+                        background: '#124E94 !important',
+                        boxShadow: '0 4px 12px rgba(23, 97, 182, 0.35)',
+                      },
+                    }}
+                  >
+                    Change Password
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      setIsChangingPassword(false);
+                      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                      setPasswordErrors({});
+                    }}
+                    startIcon={<CloseRoundedIcon sx={{ fontSize: 18 }} />}
+                    sx={{
+                      borderRadius: '12px',
+                      py: 0.9,
+                      px: 2.2,
+                      minHeight: 40,
+                      fontWeight: 700,
+                      fontSize: '0.88rem',
+                      textTransform: 'none',
+                      borderColor: '#CBD5E1',
+                      color: '#64748B',
+                      '&:hover': {
+                        borderColor: '#94A3B8',
+                        bgcolor: '#F8FAFC',
+                        color: '#1E293B',
+                      },
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                )}
               </div>
 
-              <Divider sx={{ my: 2.5 }} />
+              {isChangingPassword && (
+                <>
+                  <Divider sx={{ my: 2.5 }} />
 
-              <Box component="form" onSubmit={handlePasswordSubmit} noValidate>
-                <Grid container spacing={2.5}>
-                  {/* Current Password */}
-                  <Grid item xs={12}>
-                    <Typography variant="caption" fontWeight={700} sx={{ color: '#1E293B', display: 'block', mb: 0.75 }}>
-                      Current Password *
-                    </Typography>
-                    <TextField
-                      fullWidth
-                      size="medium"
-                      type={showCurrentPassword ? 'text' : 'password'}
-                      placeholder="Enter current password"
-                      value={passwordForm.currentPassword}
-                      onChange={(e) => {
-                        setPasswordForm({ ...passwordForm, currentPassword: e.target.value });
-                        if (passwordErrors.currentPassword) setPasswordErrors({ ...passwordErrors, currentPassword: '' });
-                      }}
-                      error={!!passwordErrors.currentPassword}
-                      helperText={passwordErrors.currentPassword}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <LockRoundedIcon sx={{ color: '#1761B6', fontSize: 20 }} />
-                          </InputAdornment>
-                        ),
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              size="small"
-                              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                              edge="end"
-                            >
-                              {showCurrentPassword ? <VisibilityOff sx={{ fontSize: 20 }} /> : <Visibility sx={{ fontSize: 20 }} />}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '12px',
-                          bgcolor: '#F8FAFC',
-                          '&:hover fieldset': { borderColor: '#1761B6' },
-                          '&.Mui-focused': { bgcolor: '#FFFFFF', '& fieldset': { borderColor: '#1761B6' } },
-                        },
-                      }}
-                    />
-                  </Grid>
+                  <Box component="form" onSubmit={handlePasswordSubmit} noValidate>
+                    <Grid container spacing={2.5}>
+                      {/* Current Password */}
+                      <Grid item xs={12}>
+                        <Typography variant="caption" fontWeight={700} sx={{ color: '#1E293B', display: 'block', mb: 0.75 }}>
+                          Current Password *
+                        </Typography>
+                        <TextField
+                          fullWidth
+                          size="medium"
+                          type={showCurrentPassword ? 'text' : 'password'}
+                          placeholder="Enter current password"
+                          value={passwordForm.currentPassword}
+                          onChange={(e) => {
+                            setPasswordForm({ ...passwordForm, currentPassword: e.target.value });
+                            if (passwordErrors.currentPassword) setPasswordErrors({ ...passwordErrors, currentPassword: '' });
+                          }}
+                          error={!!passwordErrors.currentPassword}
+                          helperText={passwordErrors.currentPassword}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <LockRoundedIcon sx={{ color: '#1761B6', fontSize: 20 }} />
+                              </InputAdornment>
+                            ),
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                  edge="end"
+                                >
+                                  {showCurrentPassword ? <VisibilityOff sx={{ fontSize: 20 }} /> : <Visibility sx={{ fontSize: 20 }} />}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: '12px',
+                              bgcolor: '#F8FAFC',
+                              '&:hover fieldset': { borderColor: '#1761B6' },
+                              '&.Mui-focused': { bgcolor: '#FFFFFF', '& fieldset': { borderColor: '#1761B6' } },
+                            },
+                          }}
+                        />
+                      </Grid>
 
-                  {/* New Password */}
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="caption" fontWeight={700} sx={{ color: '#1E293B', display: 'block', mb: 0.75 }}>
-                      New Password *
-                    </Typography>
-                    <TextField
-                      fullWidth
-                      size="medium"
-                      type={showNewPassword ? 'text' : 'password'}
-                      placeholder="Min. 8 characters"
-                      value={passwordForm.newPassword}
-                      onChange={(e) => {
-                        setPasswordForm({ ...passwordForm, newPassword: e.target.value });
-                        if (passwordErrors.newPassword) setPasswordErrors({ ...passwordErrors, newPassword: '' });
-                      }}
-                      error={!!passwordErrors.newPassword}
-                      helperText={passwordErrors.newPassword}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <LockRoundedIcon sx={{ color: '#1761B6', fontSize: 20 }} />
-                          </InputAdornment>
-                        ),
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              size="small"
-                              onClick={() => setShowNewPassword(!showNewPassword)}
-                              edge="end"
-                            >
-                              {showNewPassword ? <VisibilityOff sx={{ fontSize: 20 }} /> : <Visibility sx={{ fontSize: 20 }} />}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '12px',
-                          bgcolor: '#F8FAFC',
-                          '&:hover fieldset': { borderColor: '#1761B6' },
-                          '&.Mui-focused': { bgcolor: '#FFFFFF', '& fieldset': { borderColor: '#1761B6' } },
-                        },
-                      }}
-                    />
-                  </Grid>
+                      {/* New Password */}
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="caption" fontWeight={700} sx={{ color: '#1E293B', display: 'block', mb: 0.75 }}>
+                          New Password *
+                        </Typography>
+                        <TextField
+                          fullWidth
+                          size="medium"
+                          type={showNewPassword ? 'text' : 'password'}
+                          placeholder="Min. 8 characters"
+                          value={passwordForm.newPassword}
+                          onChange={(e) => {
+                            setPasswordForm({ ...passwordForm, newPassword: e.target.value });
+                            if (passwordErrors.newPassword) setPasswordErrors({ ...passwordErrors, newPassword: '' });
+                          }}
+                          error={!!passwordErrors.newPassword}
+                          helperText={passwordErrors.newPassword}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <LockRoundedIcon sx={{ color: '#1761B6', fontSize: 20 }} />
+                              </InputAdornment>
+                            ),
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => setShowNewPassword(!showNewPassword)}
+                                  edge="end"
+                                >
+                                  {showNewPassword ? <VisibilityOff sx={{ fontSize: 20 }} /> : <Visibility sx={{ fontSize: 20 }} />}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: '12px',
+                              bgcolor: '#F8FAFC',
+                              '&:hover fieldset': { borderColor: '#1761B6' },
+                              '&.Mui-focused': { bgcolor: '#FFFFFF', '& fieldset': { borderColor: '#1761B6' } },
+                            },
+                          }}
+                        />
+                      </Grid>
 
-                  {/* Confirm New Password */}
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="caption" fontWeight={700} sx={{ color: '#1E293B', display: 'block', mb: 0.75 }}>
-                      Confirm New Password *
-                    </Typography>
-                    <TextField
-                      fullWidth
-                      size="medium"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="Re-enter new password"
-                      value={passwordForm.confirmPassword}
-                      onChange={(e) => {
-                        setPasswordForm({ ...passwordForm, confirmPassword: e.target.value });
-                        if (passwordErrors.confirmPassword) setPasswordErrors({ ...passwordErrors, confirmPassword: '' });
-                      }}
-                      error={!!passwordErrors.confirmPassword}
-                      helperText={passwordErrors.confirmPassword}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <LockRoundedIcon sx={{ color: '#1761B6', fontSize: 20 }} />
-                          </InputAdornment>
-                        ),
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              size="small"
-                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                              edge="end"
-                            >
-                              {showConfirmPassword ? <VisibilityOff sx={{ fontSize: 20 }} /> : <Visibility sx={{ fontSize: 20 }} />}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '12px',
-                          bgcolor: '#F8FAFC',
-                          '&:hover fieldset': { borderColor: '#1761B6' },
-                          '&.Mui-focused': { bgcolor: '#FFFFFF', '& fieldset': { borderColor: '#1761B6' } },
-                        },
-                      }}
-                    />
-                  </Grid>
+                      {/* Confirm New Password */}
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="caption" fontWeight={700} sx={{ color: '#1E293B', display: 'block', mb: 0.75 }}>
+                          Confirm New Password *
+                        </Typography>
+                        <TextField
+                          fullWidth
+                          size="medium"
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          placeholder="Re-enter new password"
+                          value={passwordForm.confirmPassword}
+                          onChange={(e) => {
+                            setPasswordForm({ ...passwordForm, confirmPassword: e.target.value });
+                            if (passwordErrors.confirmPassword) setPasswordErrors({ ...passwordErrors, confirmPassword: '' });
+                          }}
+                          error={!!passwordErrors.confirmPassword}
+                          helperText={passwordErrors.confirmPassword}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <LockRoundedIcon sx={{ color: '#1761B6', fontSize: 20 }} />
+                              </InputAdornment>
+                            ),
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                  edge="end"
+                                >
+                                  {showConfirmPassword ? <VisibilityOff sx={{ fontSize: 20 }} /> : <Visibility sx={{ fontSize: 20 }} />}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: '12px',
+                              bgcolor: '#F8FAFC',
+                              '&:hover fieldset': { borderColor: '#1761B6' },
+                              '&.Mui-focused': { bgcolor: '#FFFFFF', '& fieldset': { borderColor: '#1761B6' } },
+                            },
+                          }}
+                        />
+                      </Grid>
 
-                  {/* Submit Button */}
-                  <Grid item xs={12}>
-                    <div className="flex justify-end">
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        disabled={passwordLoading}
-                        startIcon={passwordLoading ? <CircularProgress size={18} color="inherit" /> : <LockResetRoundedIcon />}
-                        sx={{
-                          py: 1.25,
-                          px: 3.5,
-                          minHeight: 46,
-                          borderRadius: '12px',
-                          fontSize: '0.96rem',
-                          fontWeight: 700,
-                          bgcolor: '#1761B6 !important',
-                          background: '#1761B6 !important',
-                          color: '#FFFFFF !important',
-                          boxShadow: '0 2px 8px rgba(23, 97, 182, 0.28)',
-                          textTransform: 'none',
-                          '&:hover': {
-                            bgcolor: '#124E94 !important',
-                            background: '#124E94 !important',
-                            boxShadow: '0 4px 12px rgba(23, 97, 182, 0.38)',
-                          },
-                        }}
-                      >
-                        {passwordLoading ? 'Updating Password...' : 'Change Password'}
-                      </Button>
-                    </div>
-                  </Grid>
-                </Grid>
-              </Box>
+                      {/* Actions: Cancel and Submit Button */}
+                      <Grid item xs={12}>
+                        <div className="flex items-center justify-end gap-3 pt-1">
+                          <Button
+                            variant="outlined"
+                            onClick={() => {
+                              setIsChangingPassword(false);
+                              setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                              setPasswordErrors({});
+                            }}
+                            sx={{
+                              borderRadius: '12px',
+                              py: 1.1,
+                              px: 3,
+                              minHeight: 44,
+                              fontWeight: 700,
+                              fontSize: '0.9rem',
+                              textTransform: 'none',
+                              borderColor: '#CBD5E1',
+                              color: '#64748B',
+                              '&:hover': {
+                                borderColor: '#94A3B8',
+                                bgcolor: '#F8FAFC',
+                                color: '#1E293B',
+                              },
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="submit"
+                            variant="contained"
+                            disabled={passwordLoading}
+                            startIcon={passwordLoading ? <CircularProgress size={18} color="inherit" /> : <LockResetRoundedIcon />}
+                            sx={{
+                              py: 1.25,
+                              px: 3.5,
+                              minHeight: 46,
+                              borderRadius: '12px',
+                              fontSize: '0.96rem',
+                              fontWeight: 700,
+                              bgcolor: '#1761B6 !important',
+                              background: '#1761B6 !important',
+                              color: '#FFFFFF !important',
+                              boxShadow: '0 2px 8px rgba(23, 97, 182, 0.28)',
+                              textTransform: 'none',
+                              '&:hover': {
+                                bgcolor: '#124E94 !important',
+                                background: '#124E94 !important',
+                                boxShadow: '0 4px 12px rgba(23, 97, 182, 0.38)',
+                              },
+                            }}
+                          >
+                            {passwordLoading ? 'Updating Password...' : 'Change Password'}
+                          </Button>
+                        </div>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                </>
+              )}
             </Paper>
           </div>
 
