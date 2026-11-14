@@ -21,6 +21,21 @@ export function AuthProvider({ children }) {
       const res = await authService.register(data);
       return res;
     },
+    updateUser(updatedUser) {
+      setSession((prev) => ({
+        ...prev,
+        user: { ...prev?.user, ...updatedUser },
+      }));
+    },
+    async fetchProfile() {
+      try {
+        const u = await authService.getProfile();
+        setSession({ user: u });
+        return u;
+      } catch {
+        return session?.user;
+      }
+    },
     async logout() {
       await authService.logout();
       setSession(null);

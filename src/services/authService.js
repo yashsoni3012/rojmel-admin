@@ -256,6 +256,176 @@ export const authService = {
   },
 
   /**
+   * Get User Profile API: GET /api/auth/profile
+   */
+  async getProfile() {
+    const base = env.apiUrl ? env.apiUrl.replace(/\/$/, '') : '';
+    let endpoint = `${base}/api/auth/profile`;
+
+    try {
+      let res = await fetch(endpoint, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      // Fallback to /api/auth/me if /api/auth/profile returns 404
+      if (res.status === 404) {
+        endpoint = `${base}/api/auth/me`;
+        res = await fetch(endpoint, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+      }
+
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        const rawUser = data.data || data.user || data;
+        const user = {
+          name: rawUser.ownerName || rawUser.name || '',
+          ownerName: rawUser.ownerName || rawUser.name || '',
+          email: rawUser.email || '',
+          mobile: rawUser.mobile || '',
+          shopName: rawUser.shopName || '',
+          businessType: rawUser.businessType || '',
+          city: rawUser.city || '',
+          address: rawUser.address || '',
+          role: rawUser.role || 'owner',
+        };
+        storage.set(USER_KEY, user);
+        return user;
+      }
+
+      const errData = await res.json().catch(() => null);
+      throw new Error(errData?.message || 'Failed to fetch profile');
+    } catch (err) {
+      if (err.message === 'Failed to fetch' || err.message?.includes('NetworkError') || err.message === 'Load failed') {
+        throw new Error('Unable to connect to backend server. Please verify your backend API is running.');
+      }
+      throw err;
+    }
+  },
+
+  /**
+   * Update User Profile API: PATCH /api/auth/profile
+   * Format:
+   * {
+   *   "ownerName": "Yash Ranpura",
+   *   "mobile": "9876543210",
+   *   "shopName": "Yash General Store",
+   *   "businessType": "Kirana",
+   *   "city": "Ahmedabad",
+   *   "address": "Maninagar, Ahmedabad"
+   * }
+   */
+  async updateProfile(profileData) {
+    const payload = {
+      ownerName: (profileData.ownerName || '').trim(),
+      mobile: (profileData.mobile || '').trim(),
+      shopName: (profileData.shopName || '').trim(),
+      businessType: (profileData.businessType || '').trim(),
+      city: (profileData.city || '').trim(),
+      address: (profileData.address || '').trim(),
+    };
+
+    const base = env.apiUrl ? env.apiUrl.replace(/\/$/, '') : '';
+    const endpoint = `${base}/api/auth/profile`;
+
+    try {
+      let res = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      // Fallback to PUT if PATCH not supported
+      if (res.status === 405) {
+        res = await fetch(endpoint, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+      }
+
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        const rawUser = data.data || data.user || data;
+        const currentUser = storage.get(USER_KEY, {}) || {};
+        const updatedUser = {
+          ...currentUser,
+          ...payload,
+          name: payload.ownerName || currentUser.name,
+          email: rawUser.email || currentUser.email,
+        };
+        storage.set(USER_KEY, updatedUser);
+        return updatedUser;
+      }
+
+      const errData = await res.json().catch(() => null);
+      throw new Error(errData?.message || 'Failed to update profile');
+    } catch (err) {
+      if (err.message === 'Failed to fetch' || err.message?.includes('NetworkError') || err.message === 'Load failed') {
+        throw new Error('Unable to connect to backend server. Please verify your backend API is running.');
+      }
+      throw err;
+    }
+  },
+
+  /**
+   * Change Password API: PATCH /api/auth/change-password
+   * Format:
+   * {
+   *   "currentPassword": "OldPassword@123",
+   *   "newPassword": "NewPassword@123",
+   *   "confirmPassword": "NewPassword@123"
+   * }
+   */
+  async changePassword({ currentPassword, newPassword, confirmPassword }) {
+    const payload = {
+      currentPassword,
+      newPassword,
+      confirmPassword: confirmPassword || newPassword,
+    };
+
+    const base = env.apiUrl ? env.apiUrl.replace(/\/$/, '') : '';
+    const endpoint = `${base}/api/auth/change-password`;
+
+    try {
+      let res = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      // Fallback to POST if server prefers POST for change-password
+      if (res.status === 405) {
+        res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+      }
+
+      if (res.ok) {
+        return await res.json().catch(() => ({ success: true }));
+      }
+
+      const errData = await res.json().catch(() => null);
+      throw new Error(errData?.message || 'Failed to change password. Please check your current password.');
+    } catch (err) {
+      if (err.message === 'Failed to fetch' || err.message?.includes('NetworkError') || err.message === 'Load failed') {
+        throw new Error('Unable to connect to backend server. Please verify your backend API is running.');
+      }
+      throw err;
+    }
+  },
+
+  /**
    * Logout API: POST /api/auth/logout
    * - Clears cookies and removes user from client
    */
