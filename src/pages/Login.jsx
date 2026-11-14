@@ -110,11 +110,9 @@ export default function Login() {
 
   // Quick 1-click Demo Credentials for Login
   const handleQuickFillLogin = () => {
-    const email = env.demoEmail || 'admin@rojmel.app';
-    const password = env.demoPassword || 'Admin@123';
-    setLoginForm({ email, password });
+    setLoginForm({ email: 'yash@gmail.com', password: 'Strong@123' });
     setLoginErrors({});
-    toast.info('Demo login credentials filled!');
+    toast.info('Filled credentials: yash@gmail.com / Strong@123');
   };
 
   // Quick 1-click Demo Fill for Register matching exact requested user format
@@ -525,10 +523,10 @@ export default function Login() {
                 <KeyRoundedIcon sx={{ color: ROJMEL_COLORS.activeBlue, fontSize: 20 }} />
                 <Box>
                   <Typography variant="caption" fontWeight={700} sx={{ color: ROJMEL_COLORS.textPrimary, display: 'block' }}>
-                    1-Click Demo Login
+                    1-Click Demo Login (Yash Ranpura)
                   </Typography>
                   <Typography variant="caption" sx={{ color: ROJMEL_COLORS.textSecondary }}>
-                    {env.demoEmail || 'admin@rojmel.app'} • Admin@123
+                    yash@gmail.com • Strong@123
                   </Typography>
                 </Box>
               </Box>

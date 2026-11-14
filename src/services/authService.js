@@ -4,13 +4,35 @@ import { storage } from './storage.js';
 const KEY = 'session';
 const REGISTERED_USERS_KEY = 'registered_users';
 
+const DEFAULT_USERS = [
+  {
+    ownerName: 'Yash Ranpura',
+    email: 'yash@gmail.com',
+    mobile: '9876543210',
+    password: 'Strong@123',
+    confirmPassword: 'Strong@123',
+    shopName: 'Yash General Store',
+    businessType: 'Grocery',
+    city: 'Ahmedabad',
+  },
+];
+
 function getRegisteredUsers() {
-  return storage.get(REGISTERED_USERS_KEY, []);
+  const users = storage.get(REGISTERED_USERS_KEY, null);
+  if (!users) {
+    storage.set(REGISTERED_USERS_KEY, DEFAULT_USERS);
+    return DEFAULT_USERS;
+  }
+  // Ensure default demo user exists
+  if (!users.some((u) => u.email?.toLowerCase() === 'yash@gmail.com')) {
+    users.unshift(...DEFAULT_USERS);
+    storage.set(REGISTERED_USERS_KEY, users);
+  }
+  return users;
 }
 
 function saveRegisteredUser(user) {
   const users = getRegisteredUsers();
-  // If user already exists by email, update it, otherwise push
   const idx = users.findIndex((u) => u.email?.toLowerCase() === user.email?.toLowerCase());
   if (idx >= 0) {
     users[idx] = user;
@@ -23,7 +45,11 @@ function saveRegisteredUser(user) {
 export const authService = {
   /**
    * Login API: POST /api/auth/login
-   * Format: { email, password }
+   * Format:
+   * {
+   *   "email": "yash@gmail.com",
+   *   "password": "Strong@123"
+   * }
    */
   async login({ email, password }) {
     const payload = {
@@ -56,18 +82,20 @@ export const authService = {
         return session;
       }
 
-      // If server returned 400 or 401 with an error message
-      if (res.status === 400 || res.status === 401) {
+      // If server returned 401 with a specific backend message
+      if (res.status === 401) {
         const errData = await res.json().catch(() => null);
-        throw new Error(errData?.message || errData?.error || 'Invalid email or password');
+        if (errData?.message) {
+          throw new Error(errData.message);
+        }
       }
     } catch (err) {
-      // Re-throw if error came from backend with specific message (not fetch failure)
       if (
         err.message &&
         err.message !== 'Failed to fetch' &&
         !err.message.includes('NetworkError') &&
-        err.message !== 'Load failed'
+        err.message !== 'Load failed' &&
+        !err.message.includes('404')
       ) {
         throw err;
       }
@@ -89,6 +117,23 @@ export const authService = {
           shopName: matched.shopName,
           businessType: matched.businessType,
           city: matched.city,
+        },
+      };
+      storage.set(KEY, session);
+      return session;
+    }
+
+    // Check Yash Ranpura credentials
+    if (payload.email === 'yash@gmail.com' && payload.password === 'Strong@123') {
+      const session = {
+        token: crypto.randomUUID(),
+        user: {
+          name: 'Yash Ranpura',
+          email: 'yash@gmail.com',
+          mobile: '9876543210',
+          shopName: 'Yash General Store',
+          businessType: 'Grocery',
+          city: 'Ahmedabad',
         },
       };
       storage.set(KEY, session);
@@ -161,13 +206,14 @@ export const authService = {
         err.message &&
         err.message !== 'Failed to fetch' &&
         !err.message.includes('NetworkError') &&
-        err.message !== 'Load failed'
+        err.message !== 'Load failed' &&
+        !err.message.includes('404')
       ) {
         throw err;
       }
     }
 
-    // Persist registered user so they can immediately log in even when backend is offline
+    // Persist registered user so they can immediately log in
     saveRegisteredUser(payload);
     return {
       success: true,

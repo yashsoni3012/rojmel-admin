@@ -140,7 +140,7 @@ export default function PageHeader({
         )}
         {onAdd && (
           <Button
-            startIcon={<AddIcon sx={{ fontSize: 22 }} />}
+            startIcon={<AddIcon sx={{ fontSize: 24 }} />}
             onClick={onAdd}
             sx={{
               background: '#1761B6 !important',
@@ -148,18 +148,18 @@ export default function PageHeader({
               color: '#FFFFFF !important',
               whiteSpace: 'nowrap',
               width: { xs: '100%', sm: 'auto' },
-              py: 1.35,
-              px: 3,
-              minHeight: 46,
-              fontSize: '0.96rem',
+              py: 1.45,
+              px: 3.4,
+              minHeight: 48,
+              fontSize: '0.98rem',
               fontWeight: 700,
               borderRadius: '12px',
-              boxShadow: 'none',
+              boxShadow: '0 2px 8px rgba(23, 97, 182, 0.28)',
               transition: 'all 0.18s ease-in-out',
               '&:hover': {
                 background: '#124E94 !important',
                 bgcolor: '#124E94 !important',
-                boxShadow: 'none',
+                boxShadow: '0 4px 14px rgba(23, 97, 182, 0.38)',
                 transform: 'translateY(-1px)',
               },
             }}

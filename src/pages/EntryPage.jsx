@@ -64,7 +64,7 @@ export default function EntryPage({ title, subtitle, type, categories, fixedCate
         searchPlaceholder={`Search ${title.toLowerCase()} (notes, amount, category)...`}
         month={month}
         onMonth={setMonth}
-        accent={accent}
+        accent="#1761B6"
         onAdd={() => setDlg({ open: true, item: null })}
       />
 

@@ -69,6 +69,15 @@ export default createTheme({
             boxShadow: 'none',
           },
         },
+        containedError: {
+          backgroundColor: '#E5484D',
+          color: '#FFFFFF',
+          boxShadow: 'none',
+          '&:hover': {
+            backgroundColor: '#DC2626',
+            boxShadow: 'none',
+          },
+        },
         outlinedPrimary: {
           borderColor: '#1761B6',
           color: '#1761B6',
