@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import {
   Box,
   Paper,
@@ -57,7 +57,6 @@ export default function Login() {
   const { isAuthed, loading, login, register } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
-  const location = useLocation();
 
   // Tab: 'login' | 'register'
   const [activeTab, setActiveTab] = useState('login');
@@ -93,8 +92,8 @@ export default function Login() {
   }
 
   if (isAuthed) {
-    const dest = location.state?.from?.pathname || '/';
-    return <Navigate to={dest} replace />;
+    // Always navigate to Dashboard page directly on auth
+    return <Navigate to="/" replace />;
   }
 
   // Handle Login input changes
@@ -134,8 +133,8 @@ export default function Login() {
     setLoginLoading(true);
     try {
       await login(loginForm);
-      const dest = location.state?.from?.pathname || '/';
-      navigate(dest, { replace: true });
+      // Always redirect to dashboard page first
+      navigate('/', { replace: true });
     } catch (err) {
       toast.error(err.message || 'Login failed. Check your credentials.');
     } finally {
@@ -182,8 +181,8 @@ export default function Login() {
 
     if (!registerForm.password) {
       newErrors.password = 'Password is required';
-    } else if (registerForm.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    } else if (registerForm.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
     }
 
     if (!registerForm.confirmPassword) {
@@ -206,8 +205,8 @@ export default function Login() {
         password: registerForm.password,
       });
 
-      const dest = location.state?.from?.pathname || '/';
-      navigate(dest, { replace: true });
+      // Always redirect to dashboard page first
+      navigate('/', { replace: true });
     } catch (err) {
       toast.error(err.message || 'Registration failed');
     } finally {
