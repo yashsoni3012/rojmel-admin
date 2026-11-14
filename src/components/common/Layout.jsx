@@ -381,7 +381,7 @@ export default function Layout() {
                 >
                   {currentNav.label}
                 </Typography>
-                <Typography
+                {/* <Typography
                   variant="caption"
                   sx={{
                     color: '#475E7B',
@@ -392,7 +392,7 @@ export default function Layout() {
                   }}
                 >
                   Your daily money ledger
-                </Typography>
+                </Typography> */}
               </Box>
             </Box>
           </Box>
