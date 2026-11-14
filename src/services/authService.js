@@ -2,25 +2,181 @@ import { env } from '../config/env.js';
 import { storage } from './storage.js';
 
 const KEY = 'session';
-const wait = (ms = 500) => new Promise((r) => setTimeout(r, ms));
+const REGISTERED_USERS_KEY = 'registered_users';
 
-// Swap these methods with real API calls (fetch/axios) when you add a backend.
+function getRegisteredUsers() {
+  return storage.get(REGISTERED_USERS_KEY, []);
+}
+
+function saveRegisteredUser(user) {
+  const users = getRegisteredUsers();
+  // If user already exists by email, update it, otherwise push
+  const idx = users.findIndex((u) => u.email?.toLowerCase() === user.email?.toLowerCase());
+  if (idx >= 0) {
+    users[idx] = user;
+  } else {
+    users.push(user);
+  }
+  storage.set(REGISTERED_USERS_KEY, users);
+}
+
 export const authService = {
+  /**
+   * Login API: POST /api/auth/login
+   * Format: { email, password }
+   */
   async login({ email, password }) {
-    await wait();
-    const validEmail = (env.demoEmail || 'admin@rojmel.app').toLowerCase();
-    const validPassword = env.demoPassword || 'Admin@123';
+    const payload = {
+      email: (email || '').trim().toLowerCase(),
+      password,
+    };
 
-    if (email.trim().toLowerCase() === validEmail && password === validPassword) {
+    const endpoint = (env.apiUrl ? env.apiUrl.replace(/\/$/, '') : '') + '/api/auth/login';
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const session = {
+          token: data.token || data.data?.token || crypto.randomUUID(),
+          user: data.user || data.data?.user || {
+            name: data.ownerName || data.name || payload.email.split('@')[0],
+            email: payload.email,
+            shopName: data.shopName,
+            businessType: data.businessType,
+            city: data.city,
+          },
+        };
+        storage.set(KEY, session);
+        return session;
+      }
+
+      // If server returned 400 or 401 with an error message
+      if (res.status === 400 || res.status === 401) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.message || errData?.error || 'Invalid email or password');
+      }
+    } catch (err) {
+      // Re-throw if error came from backend with specific message (not fetch failure)
+      if (
+        err.message &&
+        err.message !== 'Failed to fetch' &&
+        !err.message.includes('NetworkError') &&
+        err.message !== 'Load failed'
+      ) {
+        throw err;
+      }
+    }
+
+    // Client-side fallback for development / offline / demo verification:
+    const registeredUsers = getRegisteredUsers();
+    const matched = registeredUsers.find(
+      (u) => u.email?.toLowerCase() === payload.email && u.password === payload.password
+    );
+
+    if (matched) {
       const session = {
         token: crypto.randomUUID(),
-        user: { name: 'Admin', email: validEmail },
+        user: {
+          name: matched.ownerName || matched.shopName || matched.email.split('@')[0],
+          email: matched.email,
+          mobile: matched.mobile,
+          shopName: matched.shopName,
+          businessType: matched.businessType,
+          city: matched.city,
+        },
       };
       storage.set(KEY, session);
       return session;
     }
+
+    // Check predefined demo credentials
+    const validEmail = (env.demoEmail || 'admin@rojmel.app').toLowerCase();
+    const validPassword = env.demoPassword || 'Admin@123';
+
+    if (payload.email === validEmail && payload.password === validPassword) {
+      const session = {
+        token: crypto.randomUUID(),
+        user: { name: 'Admin', email: validEmail, shopName: 'Rojmel Demo Store' },
+      };
+      storage.set(KEY, session);
+      return session;
+    }
+
     throw new Error('Email or password is incorrect');
   },
+
+  /**
+   * Register API: POST /api/auth/register
+   * Format:
+   * {
+   *   "ownerName": "Yash Ranpura",
+   *   "email": "yash@gmail.com",
+   *   "mobile": "9876543210",
+   *   "password": "Strong@123",
+   *   "confirmPassword": "Strong@123",
+   *   "shopName": "Yash General Store",
+   *   "businessType": "Grocery",
+   *   "city": "Ahmedabad"
+   * }
+   */
+  async register(data) {
+    const payload = {
+      ownerName: (data.ownerName || '').trim(),
+      email: (data.email || '').trim().toLowerCase(),
+      mobile: (data.mobile || '').trim(),
+      password: data.password,
+      confirmPassword: data.confirmPassword,
+      shopName: (data.shopName || '').trim(),
+      businessType: (data.businessType || '').trim(),
+      city: (data.city || '').trim(),
+    };
+
+    const endpoint = (env.apiUrl ? env.apiUrl.replace(/\/$/, '') : '') + '/api/auth/register';
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        const resData = await res.json().catch(() => ({}));
+        saveRegisteredUser(payload);
+        return resData;
+      }
+
+      const errData = await res.json().catch(() => null);
+      if (res.status === 400 || res.status === 409) {
+        throw new Error(errData?.message || errData?.error || 'Registration failed. Email or mobile may already be in use.');
+      }
+    } catch (err) {
+      if (
+        err.message &&
+        err.message !== 'Failed to fetch' &&
+        !err.message.includes('NetworkError') &&
+        err.message !== 'Load failed'
+      ) {
+        throw err;
+      }
+    }
+
+    // Persist registered user so they can immediately log in even when backend is offline
+    saveRegisteredUser(payload);
+    return {
+      success: true,
+      message: 'Account registered successfully',
+      data: payload,
+    };
+  },
+
   logout: () => storage.remove(KEY),
   current: () => storage.get(KEY, null),
+  getRegisteredUsers,
 };

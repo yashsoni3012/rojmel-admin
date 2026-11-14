@@ -15,6 +15,11 @@ export function AuthProvider({ children }) {
       const s = await authService.login(credentials);
       setSession(s);
       toast.success(`Welcome back, ${s.user.name}`);
+      return s;
+    },
+    async register(data) {
+      const res = await authService.register(data);
+      return res;
     },
     logout() {
       authService.logout();
