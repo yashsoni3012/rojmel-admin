@@ -53,8 +53,14 @@ export default function ForgotPassword() {
     try {
       try {
         sessionStorage.setItem('pending_reset_email', trimmed);
+        localStorage.setItem('rojmel_last_reset_email', trimmed);
       } catch {}
-      await authService.forgotPassword(trimmed);
+      const resData = await authService.forgotPassword(trimmed);
+      if (resData?.resetToken) {
+        try {
+          localStorage.setItem('rojmel_reset_email_' + resData.resetToken, trimmed);
+        } catch {}
+      }
       setSubmitted(true);
       toast.success(`Password reset instructions sent to ${trimmed}!`);
     } catch (err) {

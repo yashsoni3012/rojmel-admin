@@ -40,7 +40,7 @@ export default function ResetPassword() {
   const navigate = useNavigate();
   const toast = useToast();
 
-  // Smart email detection: URL query param, location state, sessionStorage, or decoded JWT payload
+  // Smart multi-layer email detection
   const [email, setEmail] = useState(() => {
     // 1. From URL query param: ?email=user@example.com
     const paramEmail = searchParams.get('email');
@@ -51,15 +51,27 @@ export default function ResetPassword() {
       return location.state.email.trim();
     }
 
-    // 3. From sessionStorage if requested on same device
+    // 3. From token-specific localStorage entry
+    if (token) {
+      try {
+        const tokenEmail = localStorage.getItem('rojmel_reset_email_' + token);
+        if (tokenEmail && tokenEmail.includes('@')) return tokenEmail.trim();
+      } catch {}
+    }
+
+    // 4. From sessionStorage if requested on same browser
     try {
       const saved = sessionStorage.getItem('pending_reset_email');
       if (saved && saved.includes('@')) return saved.trim();
-    } catch {
-      // ignore
-    }
+    } catch {}
 
-    // 4. Try parsing JWT payload if token is structured as a JWT
+    // 5. From last forgot password request in localStorage
+    try {
+      const lastEmail = localStorage.getItem('rojmel_last_reset_email');
+      if (lastEmail && lastEmail.includes('@')) return lastEmail.trim();
+    } catch {}
+
+    // 6. Try parsing JWT payload if token is structured as a JWT
     if (token && token.includes('.')) {
       try {
         const parts = token.split('.');
@@ -71,14 +83,13 @@ export default function ResetPassword() {
             return payload.sub;
           }
         }
-      } catch {
-        // ignore
-      }
+      } catch {}
     }
 
     return '';
   });
 
+  const [fetchingEmail, setFetchingEmail] = useState(!email && !!token);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -90,9 +101,10 @@ export default function ResetPassword() {
   const [submitted, setSubmitted] = useState(false);
   const [countdown, setCountdown] = useState(4);
 
-  // Probe backend endpoint if email wasn't found in params/session/JWT
+  // Fetch verified user email from Backend API via token
   useEffect(() => {
     if (!email && token) {
+      setFetchingEmail(true);
       const base = env.apiUrl ? env.apiUrl.replace(/\/$/, '') : '';
       const endpoint = `${base}/api/auth/reset-password/${encodeURIComponent(token)}`;
 
@@ -111,10 +123,14 @@ export default function ResetPassword() {
             data.userEmail;
           if (foundEmail) {
             setEmail(foundEmail);
+            try {
+              localStorage.setItem('rojmel_reset_email_' + token, foundEmail);
+            } catch {}
           }
         })
-        .catch(() => {
-          // ignore
+        .catch(() => {})
+        .finally(() => {
+          setFetchingEmail(false);
         });
     }
   }, [email, token]);
@@ -169,9 +185,11 @@ export default function ResetPassword() {
     setLoading(true);
     try {
       await authService.resetPassword(token, password, confirmPassword);
-      // Clean up temporary sessionStorage
+      // Clean up temporary reset email markers
       try {
         sessionStorage.removeItem('pending_reset_email');
+        localStorage.removeItem('rojmel_last_reset_email');
+        if (token) localStorage.removeItem('rojmel_reset_email_' + token);
       } catch {}
 
       setSubmitted(true);
@@ -184,6 +202,8 @@ export default function ResetPassword() {
       setLoading(false);
     }
   };
+
+  const displayEmail = email || (fetchingEmail ? 'Loading account email...' : 'Account Email');
 
   return (
     <Box
@@ -321,7 +341,7 @@ export default function ResetPassword() {
                   variant="caption"
                   sx={{ color: ROJMEL_COLORS.textPrimary, fontWeight: 700, fontSize: '0.85rem' }}
                 >
-                  Resetting Password For
+                  Account Email
                 </Typography>
                 <Box
                   sx={{
@@ -347,7 +367,7 @@ export default function ResetPassword() {
               <TextField
                 fullWidth
                 size="medium"
-                value={email || 'Account email linked to this reset token'}
+                value={displayEmail}
                 InputProps={{
                   readOnly: true,
                   startAdornment: (
@@ -358,7 +378,7 @@ export default function ResetPassword() {
                 }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    bgcolor: '#F1F5F9', // subtle neutral gray signaling read-only
+                    bgcolor: '#F1F5F9', // clean neutral read-only styling
                     borderRadius: '12px',
                     cursor: 'not-allowed',
                     '& input': {
@@ -383,7 +403,7 @@ export default function ResetPassword() {
                 }}
               />
               <Typography variant="caption" sx={{ color: ROJMEL_COLORS.textSecondary, mt: 0.5, display: 'block', fontSize: '0.75rem' }}>
-                This reset token is securely associated with this account email.
+                Password reset is securely tied to this registered email address.
               </Typography>
             </Box>
 

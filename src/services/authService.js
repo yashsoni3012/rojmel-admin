@@ -209,6 +209,7 @@ export const authService = {
   async resetPassword(token, password, confirmPassword) {
     const payload = {
       password,
+      newPassword: password,
       confirmPassword: confirmPassword || password,
     };
 
