@@ -232,27 +232,34 @@ export default function ResetPassword() {
           gap: 3,
         }}
       >
-        {/* Header / Brand */}
-        <Box sx={{ textAlign: 'center' }}>
+        {/* Rojmel Logo Centered on Top */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mb: 1,
+            cursor: 'pointer',
+          }}
+          onClick={() => navigate('/login')}
+        >
           <Box
+            component="img"
+            src="/rojmel-full-logo.png"
+            alt="Rojmel Logo"
+            onError={(e) => {
+              e.currentTarget.src = '/rojmel-logo.jpg';
+            }}
             sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 56,
-              height: 56,
-              borderRadius: '16px',
-              bgcolor: 'rgba(23, 97, 182, 0.1)',
-              color: ROJMEL_COLORS.activeBlue,
+              width: '100%',
+              maxWidth: 200,
+              maxHeight: 65,
+              objectFit: 'contain',
               mb: 1.5,
             }}
-          >
-            {submitted ? (
-              <CheckCircleRoundedIcon sx={{ fontSize: 32, color: '#0E9F6E' }} />
-            ) : (
-              <LockRoundedIcon sx={{ fontSize: 28 }} />
-            )}
-          </Box>
+          />
+
           <Typography
             variant="h5"
             sx={{
@@ -260,11 +267,20 @@ export default function ResetPassword() {
               color: ROJMEL_COLORS.textPrimary,
               letterSpacing: '-0.02em',
               mb: 0.5,
+              textAlign: 'center',
             }}
           >
             {submitted ? 'Password Updated!' : 'Set New Password'}
           </Typography>
-          <Typography variant="body2" sx={{ color: ROJMEL_COLORS.textSecondary, lineHeight: 1.5 }}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: ROJMEL_COLORS.textSecondary,
+              fontSize: '0.9rem',
+              lineHeight: 1.4,
+              textAlign: 'center',
+            }}
+          >
             {submitted
               ? 'Your password has been changed successfully. You can now log in.'
               : 'Create a new, strong password for your Rojmel account.'}
