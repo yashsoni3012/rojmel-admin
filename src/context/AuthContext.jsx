@@ -21,8 +21,8 @@ export function AuthProvider({ children }) {
       const res = await authService.register(data);
       return res;
     },
-    logout() {
-      authService.logout();
+    async logout() {
+      await authService.logout();
       setSession(null);
       toast.info('You have been logged out');
     },
