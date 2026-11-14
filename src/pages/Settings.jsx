@@ -225,9 +225,9 @@ export default function Settings() {
       errs.currentPassword = 'Enter current password';
     }
     if (!passwordForm.newPassword) {
-      errs.newPassword = 'Enter new password (min. 6 characters)';
-    } else if (passwordForm.newPassword.length < 6) {
-      errs.newPassword = 'Password must be at least 6 characters';
+      errs.newPassword = 'Enter new password (min. 8 characters)';
+    } else if (passwordForm.newPassword.length < 8) {
+      errs.newPassword = 'Password must be at least 8 characters long';
     }
     if (!passwordForm.confirmPassword) {
       errs.confirmPassword = 'Confirm your new password';
@@ -888,7 +888,7 @@ export default function Settings() {
                     Security & Change Password
                   </Typography>
                   <Typography variant="caption" sx={{ color: '#64748B' }}>
-                    Ensure your account is using a strong password (minimum 6 characters)
+                    Ensure your account is using a strong password (minimum 8 characters)
                   </Typography>
                 </div>
               </div>
@@ -952,7 +952,7 @@ export default function Settings() {
                       fullWidth
                       size="medium"
                       type={showNewPassword ? 'text' : 'password'}
-                      placeholder="Min. 6 characters"
+                      placeholder="Min. 8 characters"
                       value={passwordForm.newPassword}
                       onChange={(e) => {
                         setPasswordForm({ ...passwordForm, newPassword: e.target.value });
